@@ -37,7 +37,7 @@ jobs:
             cache: npm
 
       - name: Install Hardhat
-        run: npm install --save-dev hardhat@2.22.19
+        run: npm ci
 
       - name: Run tests
         run: npx hardhat test

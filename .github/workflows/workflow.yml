@@ -46,7 +46,7 @@ jobs:
         run: npx hardhat compile
     
       - name: Run hardhat tests
-        run: npx hardhat tests
+        run: npx hardhat test
 
       - name: Run hardhat coverage
         run: npx hardhat coverage

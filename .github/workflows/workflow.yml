@@ -1,0 +1,82 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: 
+    - main
+    - feature/*
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build-backend:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./backend
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+        with:
+            ref: ${{ github.ref_name }}
+      
+      - name: Setup NodeJS 22.14.0
+        uses: actions/setup-node@v2
+        with:
+            node-version: 22.14.0
+            cache: npm
+            cache-dependency-path: '**/package-lock.json'
+
+      - name: NPM Clean Install
+        run: npm ci
+
+      - name: Run hardhat compilation
+        run: npx hardhat compile
+    
+      - name: Run hardhat tests
+        run: npx hardhat test
+
+      - name: Run hardhat coverage
+        run: npx hardhat coverage
+
+      - uses: crytic/slither-action@v0.4.1
+        with:
+            target: './backend/contracts/'
+            fail-on: none
+  build-frontend:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+            shell: bash
+            working-directory: ./frontend
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+        with:
+            ref: ${{ github.ref_name }}
+      - name: Setup NodeJS 22.14.0
+        uses: actions/setup-node@v2
+        with:
+            node-version: 22.14.0
+            cache: npm
+            cache-dependency-path: '**/package-lock.json'
+
+      - name: NPM Clean Install
+        run: npm ci
+
+      - name: Build Dapp
+        run: npm run build

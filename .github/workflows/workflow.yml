@@ -46,3 +46,5 @@ jobs:
         run: npx hardhat coverage
 
       - uses: crytic/slither-action@v0.4.1
+        with:
+            target: 'contracts/'

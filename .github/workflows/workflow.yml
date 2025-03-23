@@ -37,7 +37,6 @@ jobs:
         with:
             node-version: 22.14.0
             cache: npm
-            working-directory: ./backend
 
       - name: Install Hardhat
         run: npm ci

@@ -44,3 +44,5 @@ jobs:
 
       - name: Run hardhat tests and coverage
         run: npx hardhat coverage
+
+      - uses: crytic/slither-action@v0.4.1

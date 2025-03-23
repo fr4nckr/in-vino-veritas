@@ -30,14 +30,14 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
         with:
-            ref: feature/structure-init
+            ref: ${{ github.ref_name }}
       
       - name: Setup NodeJS 22.14.0
         uses: actions/setup-node@v2
         with:
             node-version: 22.14.0
             cache: npm
-            cache-dependency-path: backend/package-lock.json
+            cache-dependency-path: '**/package-lock.json'
 
       - name: NPM Clean Install
         run: npm ci

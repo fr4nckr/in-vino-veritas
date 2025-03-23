@@ -29,6 +29,8 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
+        with:
+            ref: feature/structure-init
       
       - name: Setup NodeJS 22.14.0
         uses: actions/setup-node@v2

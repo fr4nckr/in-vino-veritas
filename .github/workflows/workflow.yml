@@ -42,7 +42,13 @@ jobs:
       - name: NPM Clean Install
         run: npm ci
 
-      - name: Run hardhat tests and coverage
+      - name: Run hardhat compilation
+        run: npx hardhat compile
+    
+      - name: Run hardhat tests
+        run: npx hardhat tests
+
+      - name: Run hardhat coverage
         run: npx hardhat coverage
 
       - uses: crytic/slither-action@v0.4.1

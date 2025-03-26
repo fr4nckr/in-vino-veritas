@@ -3,26 +3,39 @@ const {
 } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 const { expect } = require("chai");
 
-describe("IVV Token", function () {
+describe("In Vino Veritas tests", function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
-  async function deployIVV() {
+  async function deployIVV(symbol, totalSupply) {
     // Contracts are deployed using the first signer/account by default
     const [owner] = await ethers.getSigners();
 
     const IVV = await ethers.getContractFactory("IVV");
-    const ivvToken = await IVV.deploy();
+    const ivvToken = await IVV.deploy(symbol, totalSupply);
 
     return { ivvToken, owner };
   }
 
-  describe("ERC20 Deployment", function () {
-    it("Should be able to deploy the token", async function () {
-      const totalSupply = 100;
-      const { ivvToken, owner } = await deployIVV(totalSupply);
+  async function deployProject(projectName, symbol, totalSupply) {
+    const [owner] = await ethers.getSigners();
+    const IVV = await ethers.getContractFactory("IVV");
+    const ivvToken = await IVV.deploy(symbol, totalSupply);
 
-      expect(await ivvToken.symbol()).to.equal('IVV');
+    const IVVProject = await ethers.getContractFactory("IVVProject");
+    const ivvProject = await IVVProject.deploy(ivvToken.target, projectName, 100);
+    console.log(ivvProject.target);
+    return { ivvToken, ivvProject, owner };
+  }
+
+  describe("IVV Token Deployment", function () {
+    it("Should be able to deploy the token", async function () {
+      const symbol = 'IVVTST';
+      const totalSupply = 100;
+      const { ivvToken, owner } = await deployIVV(symbol, totalSupply);
+
+      expect(await ivvToken.symbol()).to.equal('IVVTST');
+      expect(await ivvToken.totalSupply()).to.equal(100);
       expect(await ivvToken.name()).to.equal('In Vino Veritas');
     });
 
@@ -30,19 +43,29 @@ describe("IVV Token", function () {
   });
 
   describe("IVVProject tests", function () {
-    describe("IVVProject Deployment", function () {
       it("Should be able to deploy the contract", async function () {
+        const { ivvToken, ivvProject, owner } = await deployProject('Project 1', 'IVV_PRJ1', 1000);
+        expect(await ivvProject.projectName()).to.equal('Project 1');
+        expect(await ivvToken.symbol()).to.equal('IVV_PRJ1');
+        expect(await ivvToken.totalSupply()).to.equal(1000);
 
-        const { ivvToken, owner } = await deployIVV();
-        
-        const IVVProject = await ethers.getContractFactory("IVVProject");
-        const ivvProject = await IVVProject.deploy(ivv.target);
+      });
+
+      it("Should be able to start the project sale", async function () {
+        const { ivvToken, ivvProject, owner } = await deployProject('Project 1', 'IVV_PRJ1', 1000);
+        expect(await ivvProject.projectName()).to.equal('Project 1');
+        expect(await ivvToken.symbol()).to.equal('IVV_PRJ1');
+        expect(await ivvToken.totalSupply()).to.equal(1000);
+
+        await ivvProject.startProjectSale();
+        expect(await ivvProject.projectStatus()).to.equal(1);
+
+        await ivvProject.endProjectSale();
+        expect(await ivvProject.projectStatus()).to.equal(2)
 
       });
       
   
-  
-    });
     });
 
     
@@ -55,12 +78,13 @@ describe("IVV Token", function () {
         const ivvProjectFactoryDeployed = await ivvProjectFactory.deploy();
 
       });
-      it.only("Should be able to deploy a new project contract", async function () {
+
+      it("Should be able to deploy a new project contract", async function () {
 
         const ivvProjectFactory = await ethers.getContractFactory("IVVProjectFactory");
         const ivvProjectFactoryDeployed = await ivvProjectFactory.deploy();
 
-        await expect (ivvProjectFactoryDeployed.deployNewProject('TST',100)).to.emit(ivvProjectFactoryDeployed, 'TokenDeployed');
+        await expect (ivvProjectFactoryDeployed.deployProject('IVV_PRJ1', 'Project 1', 100000)).to.emit(ivvProjectFactoryDeployed, 'ProjectDeployed');
       });
   
   

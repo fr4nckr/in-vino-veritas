@@ -1,3 +1,4 @@
+import Footer from './Footer'
 import Navbar from './Navbar'
 
 interface LayoutProps {
@@ -11,6 +12,7 @@ const Layout = ({ children }: LayoutProps) => {
       <main className="flex-grow">
         {children}
       </main>
+      <Footer/>
     </div>
   )
 }

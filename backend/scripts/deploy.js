@@ -7,8 +7,10 @@ async function main() {
   const ivvContractDeployed = await ivvContract.deploy();
   await ivvContractDeployed.waitForDeployment();
   console.log(ivvContractDeployed.target);
-  const tokenAddress = await ivvContractDeployed.deployNewProject('TST', 1000);
+  const tokenAddress = await ivvContractDeployed.deployProject('TST', 'Test Project', 1000);
   console.log(tokenAddress);
+  const tokenAddress2 = await ivvContractDeployed.deployProject('TST2', 'Test Project 2', 2000);
+  console.log(tokenAddress2);
 }
 
 main().catch(console.error);

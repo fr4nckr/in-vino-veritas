@@ -10,9 +10,8 @@ import './IVVProject.sol';
  * @notice This contract is used to deploy new IVV projects
  */
 contract IVVProjectFactory is Ownable {
-
+    address[] public projects;
     event ProjectDeployed(address projectAddress, uint offChainValue);
-    event TokenDeployed(address tokenAddress);
     constructor() Ownable(msg.sender) {}
 
     /**
@@ -24,13 +23,10 @@ contract IVVProjectFactory is Ownable {
      */    
     function deployProject (string memory _symbol, string memory _name, uint _projectValue) external returns(address) {
         address ivvTokenAddress = address(new IVV(_symbol, _projectValue));
-        
         uint tokenPerPieces = _projectValue / 100;
         address ivvProjectAddress = address(new IVVProject(ivvTokenAddress, _name, tokenPerPieces));
-        
-        emit TokenDeployed(ivvTokenAddress);
-        emit ProjectDeployed (ivvProjectAddress, _projectValue);
-        
+        projects.push(ivvProjectAddress);
+        emit ProjectDeployed (ivvProjectAddress, _projectValue);        
         return ivvProjectAddress;
     }
     

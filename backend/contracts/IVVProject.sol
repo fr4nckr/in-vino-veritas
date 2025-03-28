@@ -3,29 +3,20 @@ pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./IVV.sol";
 
 /**
  * @title IVVProject
  * @notice This contract is used to manage a project in the IVV ecosystem
  */
 contract IVVProject is Ownable {
+    address public immutable usdcAddress;
+    address public immutable ivvAddress;
 
-    IERC20 ivv;
-
-    //Name of the project
     string public projectName;
-
-    uint numberOfPiecesBought;
-    uint numberOfTotalPieces;
-    uint nbTokensPerPieces;
+    uint public projectValue;
 
     mapping (address => Investor) investors;
-
-    /**
-     * @notice The current status of the project
-     */
-    ProjectStatus public projectStatus;
-
     /**
      * @notice Struct representing an investor
      * @param isRegistered Whether the investor is registered
@@ -35,7 +26,11 @@ contract IVVProject is Ownable {
         bool isRegistered; 
         uint nbTokensToSend;
     }
-    
+    /**
+     * @notice The current status of the project
+     */
+    ProjectStatus public projectStatus;
+
     /**
      * @notice Enum representing the status of the project
      */
@@ -62,14 +57,17 @@ contract IVVProject is Ownable {
 
     /**
      * @notice Constructor of the IVVProject contract
-     * @param _ivvAddress The address of the IVV token to associate to the project
+     * @param _symbol The symbol of the IVV token to deploy and to associated to the project
+     * @param _usdcAddress The address of the USDC token that will be used by investors to buy a piece of the project
      * @param _projectName The name of the project
-     * @param _tokenPerPieces The number of tokens per piece to distribute to each land piece buy
+     * @param _projectValue The estimated value of the project in USD
      */
-    constructor(address _ivvAddress, string memory _projectName, uint _tokenPerPieces) Ownable(msg.sender) {   
-         ivv = IERC20(_ivvAddress);
-         nbTokensPerPieces = _tokenPerPieces;
+    constructor(string memory _symbol, address _usdcAddress, string memory _projectName, uint _projectValue) Ownable(msg.sender) {   
          projectName = _projectName;
+         projectValue = _projectValue;
+
+         ivvAddress = address(new IVV(_symbol, _projectValue));
+         usdcAddress = _usdcAddress;
     }
     
     /**
@@ -106,21 +104,28 @@ contract IVVProject is Ownable {
      * @param _investorAddress The address of the investor that has been validated
      */
     function registerInvestor(address _investorAddress) external onlyOwner {
-        require(investors[_investorAddress].isRegistered, "You're already registered");
+        require(projectStatus != ProjectStatus.SoldOut, "Project is already Soldout");
+        require(investors[_investorAddress].isRegistered == false, "You're already registered");
         //Maximum investor to add ? 
         investors[_investorAddress].isRegistered = true;
         emit InvestorRegistered(_investorAddress);
     }
 
     /**
-     * @notice Buy a project piece
+     * @notice Buy a project piece in USDC
      * @dev This function can only be called by a registered investor and will be used to buy a project piece
      */
-    function buyProjectPiece() external onlyRegisteredInvestors payable{
+    function buyProjectPiece(uint _amount) external onlyRegisteredInvestors{
         require(projectStatus == ProjectStatus.OnSale, "Project is not on sale");
-        require(investors[msg.sender].isRegistered, "You're not a registered investor");
-        numberOfPiecesBought++;
-        //ivv.transfer(msg.sender, nbTokensPerPieces);
+        require(IERC20(ivvAddress).balanceOf(address(this)) >= _amount, "Not enough project pieces available");
+        require(IERC20(usdcAddress).balanceOf(msg.sender) < _amount, "Not enough USDC to buy");
+
+        //transfer USDC to the contract
+        IERC20(usdcAddress).transferFrom(msg.sender, address(this), _amount);
+
+        //Send tokens to the investor
+        IERC20(ivvAddress).transferFrom(address(this), msg.sender, _amount);
+
         emit LandPieceBought(msg.sender);
     }
 

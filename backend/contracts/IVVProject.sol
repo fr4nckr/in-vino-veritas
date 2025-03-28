@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -86,7 +86,7 @@ contract IVVProject is Ownable {
      */
     function startProjectSale () external onlyOwner {
         require(projectStatus == ProjectStatus.ToCome, "Project is not to come");
-        projectStatus = ProjectStatus.OnSale;     
+        projectStatus = ProjectStatus.OnSale;
         emit ProjectStatusChange(ProjectStatus.ToCome, ProjectStatus.OnSale);
     }
 
@@ -119,8 +119,8 @@ contract IVVProject is Ownable {
     function buyProjectPiece() external onlyRegisteredInvestors payable{
         require(projectStatus == ProjectStatus.OnSale, "Project is not on sale");
         require(investors[msg.sender].isRegistered, "You're not a registered investor");
-        ivv.transfer(msg.sender, nbTokensPerPieces);
         numberOfPiecesBought++;
+        //ivv.transfer(msg.sender, nbTokensPerPieces);
         emit LandPieceBought(msg.sender);
     }
 

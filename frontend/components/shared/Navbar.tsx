@@ -7,14 +7,26 @@ import Link from 'next/link'
 
 import { useAccount } from 'wagmi'
 import { getBalance } from 'wagmi/actions';
+import { formatUnits } from 'viem';
+import { GetBalanceReturnType, type GetBalanceParameters } from '@wagmi/core'
+import { useEffect } from 'react';
+import { useState } from 'react';
 const Navbar = () => {
   const { address } = useAccount();
 
   //Fetch USDC balance fr the connected account
-  const balance = getBalance(config, {
-    address: address as `0x${string}`,
-    token: USDC_ADDRESS, 
-  })
+  const [balance, setBalance] = useState<bigint>(BigInt(0));
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      const balance:GetBalanceReturnType = await getBalance(config, {
+        address: address as `0x${string}`,
+        token: USDC_ADDRESS
+      })
+      setBalance(balance.value);
+    }
+    fetchBalance();
+  }, [address]);
 
   console.log(balance);
 
@@ -45,6 +57,20 @@ const Navbar = () => {
           About
         </Link>
       </div>
+      <div className="flex items-center space-x-8">
+        <h2>
+          <span className="text-gray-700 hover:text-gray-900">
+            {formatUnits(balance, 6)} <Image
+            src="/images/usdc.png"
+            width={20}
+            height={20}
+            alt="Picture of the author"
+          />
+          </span>
+        </h2>
+        
+      </div>
+
 
       {/* Connect Button */}
       <div><ConnectButton showBalance={true} /></div>

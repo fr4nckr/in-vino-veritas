@@ -6,15 +6,16 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IVV.sol";
 
 /**
- * @title IVVProject
+ * @title InVinoVeritasProject
  * @notice This contract is used to manage a project in the IVV ecosystem
  */
-contract IVVProject is Ownable {
+contract InVinoVeritasProject is Ownable {
     address public immutable usdcAddress;
-    address public immutable ivvAddress;
+    address public immutable ivv;
 
     string public projectName;
     uint public projectValue;
+    uint private constant exchangeRate = 50;
 
     mapping (address => Investor) investors;
     /**
@@ -65,8 +66,7 @@ contract IVVProject is Ownable {
     constructor(string memory _symbol, address _usdcAddress, string memory _projectName, uint _projectValue) Ownable(msg.sender) {   
          projectName = _projectName;
          projectValue = _projectValue;
-
-         ivvAddress = address(new IVV(_symbol, _projectValue));
+         ivv = address(new IVV(_symbol, _projectValue/exchangeRate));
          usdcAddress = _usdcAddress;
     }
     
@@ -113,20 +113,27 @@ contract IVVProject is Ownable {
 
     /**
      * @notice Buy a project piece in USDC
+     * @param _amount USDC amount to buy with
      * @dev This function can only be called by a registered investor and will be used to buy a project piece
      */
     function buyProjectPiece(uint _amount) external onlyRegisteredInvestors{
+        uint usdcAmount = _amount ; 
         require(projectStatus == ProjectStatus.OnSale, "Project is not on sale");
-        require(IERC20(ivvAddress).balanceOf(address(this)) >= _amount, "Not enough project pieces available");
-        require(IERC20(usdcAddress).balanceOf(msg.sender) < _amount, "Not enough USDC to buy");
+        require(IERC20(ivv).balanceOf(address(this)) >= (usdcAmount / exchangeRate), "Not enough project pieces available for sale");
+        require(IERC20(usdcAddress).balanceOf(msg.sender) >= usdcAmount, "Not enough USDC to buy");
+        require(usdcAmount % exchangeRate == 0, "You can't buy a fraction of a project piece");
 
         //transfer USDC to the contract
-        IERC20(usdcAddress).transferFrom(msg.sender, address(this), _amount);
+        IERC20(usdcAddress).approve(msg.sender,  usdcAmount);
+        IERC20(usdcAddress).transferFrom(msg.sender, address(this), usdcAmount);
 
         //Send tokens to the investor
-        IERC20(ivvAddress).transferFrom(address(this), msg.sender, _amount);
+        IERC20(ivv).approve(address(this),  _amount);
+        IERC20(ivv).transferFrom(address(this), msg.sender, _amount / exchangeRate);
 
         emit LandPieceBought(msg.sender);
     }
+
+
 
 }

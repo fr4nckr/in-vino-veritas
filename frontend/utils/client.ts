@@ -6,8 +6,8 @@ http : Une fonction qui spécifie le mode de transport pour la communication ave
 hardhat : Un objet qui représente la chaîne Hardhat, utilisée pour le développement et le test de contrats intelligents localement avant leur déploiement sur une chaîne publique.
 */
 import { createPublicClient, http } from 'viem'
-import { hardhat, sepolia} from 'viem/chains'
-const RPC = process.env.NEXTPUBLICALCHEMY_RPC || "";
+import { hardhat } from 'viem/chains'
+
 /*
 La fonction createPublicClient est appelée avec un objet de configuration qui spécifie deux propriétés :
 
@@ -18,5 +18,4 @@ transport : Le mode de transport utilisé pour envoyer et recevoir des données 
 export const publicClient = createPublicClient({ 
   chain: hardhat,
   transport: http(process.env.RPC_URL)
-  //transport: http(RPC)
 })

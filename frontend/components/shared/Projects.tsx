@@ -1,7 +1,6 @@
 'use client'; 
 import { useState, useEffect } from "react";
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from "@/constants";
-import { useReadContract, useWatchContractEvent, useWaitForTransactionReceipt, useAccount } from "wagmi";
+import { useAccount } from "wagmi";
 import { publicClient } from "@/utils/client";
 import { parseAbiItem } from 'viem'
 import ProjectDetails from "./ProjectDetails";
@@ -51,8 +50,8 @@ const Projects = () => {
     return (
       <>
         <h2 className="text-lg font-bold mb-2">Project list</h2>
-        {projects.map((project) => (
-          <ProjectDetails projectAddress={project.projectAddress} />
+        {projects.map((project, index) => (
+          <ProjectDetails key={index} projectAddress={project.projectAddress} />
         ))}
       </>
       

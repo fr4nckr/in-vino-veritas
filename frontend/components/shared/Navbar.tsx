@@ -1,8 +1,23 @@
+'use client';
+import { USDC_ADDRESS } from '@/constants'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { config } from '@/utils/wagmi'
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { useAccount } from 'wagmi'
+import { getBalance } from 'wagmi/actions';
 const Navbar = () => {
+  const { address } = useAccount();
+
+  //Fetch USDC balance fr the connected account
+  const balance = getBalance(config, {
+    address: address as `0x${string}`,
+    token: USDC_ADDRESS, 
+  })
+
+  console.log(balance);
+
   return (
     <nav className="flex items-center justify-between px-6 py-4 bg-white shadow-md">
       {/* Logo */}

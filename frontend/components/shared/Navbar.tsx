@@ -11,6 +11,7 @@ import { formatUnits } from 'viem';
 import { GetBalanceReturnType } from '@wagmi/core'
 import { useEffect } from 'react';
 import { useState } from 'react';
+
 const Navbar = () => {
   const {isConnected, address } = useAccount();
   //Fetch USDC balance fr the connected account
@@ -36,7 +37,7 @@ const Navbar = () => {
   useEffect(() => {
     fetchBalance();
     refetchOwner();
-  }, [address]);
+  }, [balance, ownerAddress]);
 
   return (
     <nav className="flex items-center justify-between px-6 py-4 bg-white shadow-md">

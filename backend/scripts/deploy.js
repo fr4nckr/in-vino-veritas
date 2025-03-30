@@ -27,10 +27,11 @@ async function main() {
   const ivvProjectFactory = await ivvProjectFactoryContract.deploy(USDC);
   await ivvProjectFactory.waitForDeployment();
   console.log(ivvProjectFactory.target);
-  const tokenAddress = await ivvProjectFactory.deployProject('IVV_BRDX', 'Test Project', 1000);
-  console.log(tokenAddress);
-  const tokenAddress2 = await ivvProjectFactory.deployProject('IVV_TLS', 'Test Project 2', 2000);
-  console.log(tokenAddress2);
+  await ivvProjectFactory.deployProject('IVV_BRDX', 'Test Project', 1000);
+  console.log(await ivvProjectFactory.getProjects());
+
+  
+  
 }
 
 main().catch(console.error);

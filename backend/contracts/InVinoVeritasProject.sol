@@ -15,18 +15,19 @@ contract InVinoVeritasProject is Ownable {
 
     string public projectName;
     uint public projectValue;
-    uint private constant exchangeRate = 50;
-
+    uint private immutable exchangeRate = 50;
+    
     mapping (address => Investor) investors;
+
     /**
      * @notice Struct representing an investor
-     * @param isRegistered Whether the investor is registered
-     * @param nbTokensToSend The number of tokens to send to the investor
+     * @param isRegistered Whether the investor is registered (off-chain KYC)
      */
     struct Investor {
         bool isRegistered; 
         uint nbTokensToSend;
     }
+
     /**
      * @notice The current status of the project
      */
@@ -53,7 +54,11 @@ contract InVinoVeritasProject is Ownable {
      * @param newStatus The new status of the project
      */
     event ProjectStatusChange(ProjectStatus previousStatus, ProjectStatus newStatus);
-
+    
+    /**
+     * @notice Event emitted when a piece of the land has been bought
+     * @param investorAddress Address of the investor who bought the piece of the land
+     */
     event LandPieceBought(address investorAddress);
 
     /**

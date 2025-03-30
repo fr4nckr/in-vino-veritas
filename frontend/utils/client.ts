@@ -17,5 +17,5 @@ transport : Le mode de transport utilisé pour envoyer et recevoir des données 
 */
 export const publicClient = createPublicClient({ 
   chain: hardhat,
-  transport: http(process.env.RPC_URL)
+  transport: http()
 })

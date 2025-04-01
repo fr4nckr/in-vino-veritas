@@ -28,10 +28,8 @@ async function main() {
   await ivvProjectFactory.waitForDeployment();
   console.log(ivvProjectFactory.target);
   await ivvProjectFactory.deployProject('IVV_BRDX', 'Test Project', 1000);
-  console.log(await ivvProjectFactory.getProjects());
-
-  
-  
+  const projects = await ivvProjectFactory.allProjects();
+  console.log(projects);
 }
 
 main().catch(console.error);

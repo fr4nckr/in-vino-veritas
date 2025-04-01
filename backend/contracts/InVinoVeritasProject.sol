@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity 0.8.28;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
+
 import "./IVV.sol";
 
 /**
@@ -10,12 +12,14 @@ import "./IVV.sol";
  * @notice This contract is used to manage a project in the IVV ecosystem
  */
 contract InVinoVeritasProject is Ownable {
-    address public immutable usdcAddress;
-    address public immutable ivv;
+    IERC20 public immutable usdc;
+    IERC20 public immutable ivv;
 
     string public projectName;
-    uint public projectValue;
-    uint private immutable exchangeRate = 50;
+    uint256 public projectValue;
+
+    uint256 private immutable exchangeRate = 50;
+    
     
     mapping (address => Investor) investors;
 
@@ -24,8 +28,7 @@ contract InVinoVeritasProject is Ownable {
      * @param isRegistered Whether the investor is registered (off-chain KYC)
      */
     struct Investor {
-        bool isRegistered; 
-        uint nbTokensToSend;
+        bool isRegistered;
     }
 
     /**
@@ -71,8 +74,11 @@ contract InVinoVeritasProject is Ownable {
     constructor(string memory _symbol, address _usdcAddress, string memory _projectName, uint _projectValue) Ownable(msg.sender) {   
          projectName = _projectName;
          projectValue = _projectValue;
-         ivv = address(new IVV(_symbol, _projectValue/exchangeRate));
-         usdcAddress = _usdcAddress;
+         
+         // Calculate initial supply (18 decimals)
+         uint256 initialSupply = (_projectValue * 10 ** 18) / exchangeRate;
+         ivv = new IVV(_symbol, initialSupply);
+         usdc = IERC20(_usdcAddress);
     }
     
     /**
@@ -111,34 +117,37 @@ contract InVinoVeritasProject is Ownable {
     function registerInvestor(address _investorAddress) external onlyOwner {
         require(projectStatus != ProjectStatus.SoldOut, "Project is already Soldout");
         require(investors[_investorAddress].isRegistered == false, "You're already registered");
-        //Maximum investor to add ? 
         investors[_investorAddress].isRegistered = true;
         emit InvestorRegistered(_investorAddress);
     }
 
     /**
-     * @notice Buy a project piece in USDC
+     * @notice Buy a land piece of the project in USDC
      * @param _amount USDC amount to buy with
-     * @dev This function can only be called by a registered investor and will be used to buy a project piece
+     * @dev This function can only be called by a registered investor and will be used to buy a project piece. Remember to make the usdc approval.
      */
-    function buyProjectPiece(uint _amount) external onlyRegisteredInvestors{
-        uint usdcAmount = _amount ; 
+    function buyLandPiece(uint256 _amount) external onlyRegisteredInvestors {
+        require(_amount > 0, "You have to send a positive USDC amount");
         require(projectStatus == ProjectStatus.OnSale, "Project is not on sale");
-        require(IERC20(ivv).balanceOf(address(this)) >= (usdcAmount / exchangeRate), "Not enough project pieces available for sale");
-        require(IERC20(usdcAddress).balanceOf(msg.sender) >= usdcAmount, "Not enough USDC to buy");
-        require(usdcAmount % exchangeRate == 0, "You can't buy a fraction of a project piece");
+        uint256 usdcAmountIn = _amount * 10 ** 6;
+        
+        // Calculate IVV tokens to send (18 decimals)
+        uint256 ivvAmountOut = Math.mulDiv(_amount, 10 ** 18,  exchangeRate);
 
-        //transfer USDC to the contract
-        IERC20(usdcAddress).approve(msg.sender,  usdcAmount);
-        IERC20(usdcAddress).transferFrom(msg.sender, address(this), usdcAmount);
+        // Check if we have enough IVV tokens to sell
+        require(ivv.balanceOf(address(this)) >= ivvAmountOut, "Not enough project pieces available for sale");
+        require(usdc.balanceOf(msg.sender) >= usdcAmountIn, "Not enough USDC to buy");
+        
+        // Check if this purchase would exceed the total supply
+        require(ivvAmountOut <= ivv.totalSupply(), "Purchase would exceed total supply");
 
-        //Send tokens to the investor
-        IERC20(ivv).approve(address(this),  _amount);
-        IERC20(ivv).transferFrom(address(this), msg.sender, _amount / exchangeRate);
-
+        // Transfer USDC from buyer to contract
+        usdc.transferFrom(msg.sender, address(this), usdcAmountIn);
+        
+        // Transfer IVV tokens from contract to buyer
+        ivv.transfer(msg.sender, ivvAmountOut);
+        
+        
         emit LandPieceBought(msg.sender);
     }
-
-
-
 }

@@ -1,6 +1,6 @@
 'use client';
-import { useAccount} from 'wagmi';
-import { PROJECT_CONTRACT_ABI } from '@/constants';
+import { useAccount, useWaitForTransactionReceipt, useWriteContract} from 'wagmi';
+import { PROJECT_CONTRACT_ABI, PROJECT_FACTORY_CONTRACT_ADDRESS } from '@/constants';
 import { multicall } from 'viem/actions';
 import { publicClient } from '@/utils/client';
 import { useEffect, useState } from 'react';
@@ -54,6 +54,21 @@ const ProjectDetail = ({ projectAddress }: { projectAddress: `0x${string}` | und
    
   }, [address]);
 
+
+  const { data: hash, error, isPending, writeContract } = useWriteContract()
+  const handleStartProjectSale = async() => { 
+      writeContract({
+          ...projectContract,
+          functionName: "startProjectSale",
+      })
+  }
+
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({
+      hash, 
+    })
+    
+
   // console.log("projectName", projectName);
   // console.log("projectStatus", projectStatus);
   // console.log("ivv", ivv);
@@ -66,7 +81,8 @@ const ProjectDetail = ({ projectAddress }: { projectAddress: `0x${string}` | und
         <h2 className="text-xl font-semibold mb-2">{String(projectName || "No Description")}</h2>
         <p className="text-sm text-gray-600 mb-1"><strong>Status:</strong> {projectStatus === 0 ? 'Soon' : 'Closed'}</p>
         <p className="text-sm text-gray-600 mb-1"><strong>Total Supply:</strong> {ivv && ivv.totalSupply ? BigInt(ivv?.totalSupply.value).toString() : '/'}</p>
-        <p className="text-sm text-gray-600 mb-1"><strong>IVV Token:</strong> ${ivv && ivv?.symbol}</p>
+        <p className="text-sm text-gray-600 mb-1"><strong>IVV Token:</strong> {ivv && ivv?.symbol}</p>
+        {projectStatus === 0 && <button className='mt-4' onClick={() => handleStartProjectSale()}>Start Project Sale</button>}
       </div>
   );
 }

@@ -1,5 +1,5 @@
 export const USDC_ADDRESS="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-export const PROJECT_FACTORY_CONTRACT_ADDRESS="0xC6A09F78CfB85275e5261200442b0B9AA9D4D0ce"
+export const PROJECT_FACTORY_CONTRACT_ADDRESS="0xa86582Ad5E80abc19F95f8A9Fb3905Cda0dAbd59"
 export const PROJECT_FACTORY_ABI=[
   {
     "inputs": [
@@ -155,7 +155,7 @@ export const PROJECT_FACTORY_ABI=[
     "type": "function"
   }
 ]
-export const PROJECT_CONTRACT_ABI =  [
+export const PROJECT_CONTRACT_ABI = [
   {
     "inputs": [
       {
@@ -276,7 +276,7 @@ export const PROJECT_CONTRACT_ABI =  [
         "type": "uint256"
       }
     ],
-    "name": "buyProjectPiece",
+    "name": "buyLandPiece",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

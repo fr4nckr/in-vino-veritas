@@ -12,14 +12,15 @@ import "./IVV.sol";
  * @notice This contract is used to manage a project in the IVV ecosystem
  */
 contract InVinoVeritasProject is Ownable {
+    
     IERC20 public immutable usdc;
     IERC20 public immutable ivv;
 
     string public projectName;
+
     uint256 public projectValue;
 
     uint256 private immutable exchangeRate = 50;
-    
     
     mapping (address => Investor) investors;
 
@@ -66,18 +67,18 @@ contract InVinoVeritasProject is Ownable {
 
     /**
      * @notice Constructor of the IVVProject contract
-     * @param _symbol The symbol of the IVV token to deploy and to associated to the project
+     * @param _symbolIvv The symbol of the IVV token to deploy and to associated to the project
      * @param _usdcAddress The address of the USDC token that will be used by investors to buy a piece of the project
      * @param _projectName The name of the project
      * @param _projectValue The estimated value of the project in USD
      */
-    constructor(string memory _symbol, address _usdcAddress, string memory _projectName, uint _projectValue) Ownable(msg.sender) {   
+    constructor(string memory _symbolIvv, address _usdcAddress, string memory _projectName, uint _projectValue) Ownable(msg.sender) {   
          projectName = _projectName;
          projectValue = _projectValue;
          
          // Calculate initial supply (18 decimals)
          uint256 initialSupply = (_projectValue * 10 ** 18) / exchangeRate;
-         ivv = new IVV(_symbol, initialSupply);
+         ivv = new IVV(_symbolIvv, initialSupply);
          usdc = IERC20(_usdcAddress);
     }
     
@@ -105,7 +106,7 @@ contract InVinoVeritasProject is Ownable {
      */
     function endProjectSale () external onlyOwner {
         require(projectStatus == ProjectStatus.OnSale, "Project is not on sale");
-        projectStatus = ProjectStatus.SoldOut;       
+        projectStatus = ProjectStatus.SoldOut;
         emit ProjectStatusChange(ProjectStatus.OnSale, ProjectStatus.SoldOut);
     }
 
@@ -130,14 +131,10 @@ contract InVinoVeritasProject is Ownable {
         require(_amount > 0, "You have to send a positive USDC amount");
         require(projectStatus == ProjectStatus.OnSale, "Project is not on sale");
         uint256 usdcAmountIn = _amount * 10 ** 6;
-        
-        // Calculate IVV tokens to send (18 decimals)
-        uint256 ivvAmountOut = Math.mulDiv(_amount, 10 ** 18,  exchangeRate);
-
-        // Check if we have enough IVV tokens to sell
-        require(ivv.balanceOf(address(this)) >= ivvAmountOut, "Not enough project pieces available for sale");
         require(usdc.balanceOf(msg.sender) >= usdcAmountIn, "Not enough USDC to buy");
-        
+        uint256 ivvAmountOut = Math.mulDiv(_amount, 10 ** 18,  exchangeRate);
+        require(ivv.balanceOf(address(this)) >= ivvAmountOut, "Not enough project pieces available for sale");
+
         // Check if this purchase would exceed the total supply
         require(ivvAmountOut <= ivv.totalSupply(), "Purchase would exceed total supply");
 
@@ -146,7 +143,6 @@ contract InVinoVeritasProject is Ownable {
         
         // Transfer IVV tokens from contract to buyer
         ivv.transfer(msg.sender, ivvAmountOut);
-        
         
         emit LandPieceBought(msg.sender);
     }

@@ -1,27 +1,83 @@
 'use client';
-import { useAccount, useWaitForTransactionReceipt, useWriteContract} from 'wagmi';
-import { PROJECT_CONTRACT_ABI, PROJECT_FACTORY_CONTRACT_ADDRESS } from '@/constants';
+import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract} from 'wagmi';
+import { PROJECT_CONTRACT_ABI, USDC_ADDRESS } from '@/constants';
 import { multicall } from 'viem/actions';
 import { publicClient } from '@/utils/client';
 import { useEffect, useState } from 'react';
 import { getToken, GetTokenReturnType } from '@wagmi/core'
 import { config } from '@/utils/wagmi';
+import { Alert } from '../ui/alert';
+import { Input } from '../ui/input';
+import { Button } from '../ui/button';
+import { formatUnits, parseUnits } from 'viem/utils';
+import { erc20Abi } from 'viem';
 
-const ProjectDetail = ({ projectAddress }: { projectAddress: `0x${string}` | undefined }) => {
+const ProjectDetail = ({ isOwner, projectAddress }: { isOwner: boolean, projectAddress: `0x${string}` | undefined }) => {
+
   const { address } = useAccount();
-
-  const projectContract = {
-    address: projectAddress as `0x${string}`,
-    abi: PROJECT_CONTRACT_ABI, 
-    account: address
-  } as const
 
   const [projectName, setProjectName] = useState<string | undefined>("");
   const [projectStatus, setProjectStatus] = useState<number | undefined>(0);
   const [ivv, setIvv] = useState<GetTokenReturnType | undefined>(undefined);
- 
+  const [buyAmount, setBuyAmount] = useState<string>("0");
+  const [projectValue, setProjectValue] = useState<string>("0");
+
+  const { data: ivvBalance } = useReadContract({
+    address: ivv?.address as `0x${string}`,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: [address as `0x${string}`]
+  });
+
+  const { data: hash, error, writeContract } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
+
+  const handleStartProjectSale = async () => {
+    writeContract({
+      address: projectAddress as `0x${string}`,
+      abi: PROJECT_CONTRACT_ABI,
+      functionName: "startProjectSale",
+      args: [],
+      account: address
+    });
+  };
+
+  const handleEndProjectSale = async () => {
+    writeContract({
+      address: projectAddress as `0x${string}`,
+      abi: PROJECT_CONTRACT_ABI,
+      functionName: "endProjectSale",
+      args: [],
+      account: address
+    });
+  };
+
+  const handleApproveAndBuyTokens = async () => {
+        writeContract({
+            address: USDC_ADDRESS,
+            abi: erc20Abi,
+            functionName: 'approve',
+            args: [projectAddress as `0x${string}`, parseUnits(buyAmount, 6)],
+        });
+
+        if(isConfirmed){
+        writeContract( {
+                address: projectAddress as `0x${string}`,
+                abi: PROJECT_CONTRACT_ABI,
+                functionName: 'buyLandPiece',
+                args: [parseUnits(buyAmount, 6)],
+            })
+        }
+  };
+
   useEffect(() => {
-    const fetchData  = async () => {
+    const fetchData = async () => {
+      const projectContract = {
+        address: projectAddress as `0x${string}`,
+        abi: PROJECT_CONTRACT_ABI, 
+        account: address
+      } as const;
+
       const projectInformations = await multicall(publicClient, ({ 
         contracts: [
           {
@@ -35,55 +91,144 @@ const ProjectDetail = ({ projectAddress }: { projectAddress: `0x${string}` | und
           {
             ...projectContract,
             functionName: 'ivv'
+          },
+          {
+            ...projectContract,
+            functionName: 'projectValue'
           }
         ],
         multicallAddress: '0xcA11bde05977b3631167028862bE2a173976CA11' 
       }));
     
-      const ivvToken = await getToken(config,{
+      const ivvToken = await getToken(config, {
         address: projectInformations[2].result as `0x${string}`,
-      })
+      });
 
       setProjectName(projectInformations[0].result as string);
       setProjectStatus(projectInformations[1].result as number);
       setIvv(ivvToken);
-
-    }
+      setProjectValue(BigInt(projectInformations[3].result as bigint).toString());
+    };
 
     fetchData();
-   
-  }, [address]);
+  }, [address, projectAddress]);
 
+  const getStatusText = (status: number) => {
+    switch(status) {
+      case 0: return "À venir";
+      case 1: return "En vente";
+      case 2: return "Vendu";
+      default: return "Inconnu";
+    }
+  };
 
-  const { data: hash, error, isPending, writeContract } = useWriteContract()
-  const handleStartProjectSale = async() => { 
-      writeContract({
-          ...projectContract,
-          functionName: "startProjectSale",
-      })
-  }
-
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({
-      hash, 
-    })
-    
-
-  // console.log("projectName", projectName);
-  // console.log("projectStatus", projectStatus);
-  // console.log("ivv", ivv);
-  
-  // Determine the background color based on job status
-  const bgColor = projectStatus === 0 ? 'bg-blue-100' : 'bg-red-100';
+  const getStatusColor = (status: number) => {
+    switch(status) {
+      case 0: return "bg-blue-100 text-blue-800";
+      case 1: return "bg-green-100 text-green-800";
+      case 2: return "bg-gray-100 text-gray-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
 
   return (
-      <div className={`border rounded<lg p-4 mb-4 shadow-md ${bgColor}`}>
-        <h2 className="text-xl font-semibold mb-2">{String(projectName || "No Description")}</h2>
-        <p className="text-sm text-gray-600 mb-1"><strong>Status:</strong> {projectStatus === 0 ? 'Soon' : 'Closed'}</p>
-        <p className="text-sm text-gray-600 mb-1"><strong>Total Supply:</strong> {ivv && ivv.totalSupply ? BigInt(ivv?.totalSupply.value).toString() : '/'}</p>
-        <p className="text-sm text-gray-600 mb-1"><strong>IVV Token:</strong> {ivv && ivv?.symbol}</p>
-        {projectStatus === 0 && <button className='mt-4' onClick={() => handleStartProjectSale()}>Start Project Sale</button>}
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      {/* Transaction Status Alerts */}
+      <div className="p-4">
+        {hash && (
+          <Alert className="mb-2 bg-blue-50 text-blue-700 border-blue-200">
+            <p className="font-medium">Transaction Hash:</p>
+            <p className="text-sm break-all">{hash}</p>
+          </Alert>
+        )}
+        {isConfirming && (
+          <Alert className="mb-2 bg-yellow-50 text-yellow-700 border-yellow-200">
+            <p className="font-medium flex items-center">
+              <span className="mr-2 animate-spin">⟳</span>
+              En attente de confirmation...
+            </p>
+          </Alert>
+        )}
+        {isConfirmed && (
+          <Alert className="mb-2 bg-green-50 text-green-700 border-green-200">
+            <p className="font-medium flex items-center">
+              <span className="mr-2">✓</span>
+              Transaction confirmée
+            </p>
+          </Alert>
+        )}
+        {error && (
+          <Alert className="mb-2 bg-red-50 text-red-700 border-red-200">
+            <p className="font-medium">Erreur:</p>
+            <p className="text-sm">{error ? error.message : ''}</p>
+          </Alert>
+        )}
       </div>
+
+      {/* Project Information */}
+      <div className="p-6">
+        <div className="flex justify-between items-start mb-6">
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold mb-2">{String(projectName || "Sans nom")}</h2>
+            <p className="text-gray-600 mb-2">Valeur du projet: {projectValue} USD</p>
+            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(projectStatus || 0)}`}>
+              {getStatusText(projectStatus || 0)}
+            </span>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-600">Total Supply:</p>
+            <p className="font-semibold">{ivv?.totalSupply ? formatUnits(ivv.totalSupply.value, ivv.decimals).toString() : '/'} {ivv?.symbol || '/'}</p>
+            <p className="text-sm text-gray-600 mt-2">Your share:</p>
+            <p className="font-semibold">{ivvBalance ? formatUnits(ivvBalance as bigint, 18).toString() : '/'} {ivv?.symbol || '/'}</p>
+          </div>
+        </div>
+
+        {/* Token Purchase Section */}
+        {projectStatus === 1 && (
+          <div className="mt-6 pt-6 border-t">
+            <div className="flex items-center gap-4">
+              <Input
+                type="number"
+                value={buyAmount}
+                onChange={(e) => setBuyAmount(e.target.value)}
+                className="flex-1"
+                placeholder="Montant en USDC"
+                min="50"
+                step="0.5"
+              />
+              <Button 
+                onClick={handleApproveAndBuyTokens}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Acheter
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Start Sale Button */}
+        {isOwner && projectStatus === 0 && (
+            <div className="mt-6">
+            <Button 
+              onClick={handleStartProjectSale}
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+            >
+              Démarrer la vente
+            </Button>
+          </div>
+            )}
+        {isOwner && projectStatus === 1 && (
+            <div className="mt-6">
+            <Button 
+              onClick={handleEndProjectSale}
+              className="w-full bg-red-600 hover:bg-red-700 text-white"
+            >
+              Clôturer la vente
+            </Button>
+          </div>
+            )}
+      </div>
+    </div>
   );
 }
 

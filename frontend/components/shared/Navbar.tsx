@@ -13,19 +13,10 @@ import { useEffect } from 'react';
 import { useState } from 'react';
 
 const Navbar = () => {
-  const {isConnected, address } = useAccount();
+  
   //Fetch USDC balance fr the connected account
   const [balance, setBalance] = useState<bigint>(BigInt(0));
-  const fetchBalance = async () => {
-    if (isConnected) {
-      const balance:GetBalanceReturnType = await getBalance(config, {
-        address: address as `0x${string}`,
-        token: USDC_ADDRESS
-      })
-      setBalance(balance.value);
-    }
-  }
- 
+  const { address, isConnected } = useAccount();
   const { data: ownerAddress, refetch:refetchOwner} = useReadContract({
     address: PROJECT_FACTORY_CONTRACT_ADDRESS,
     abi: PROJECT_FACTORY_ABI,
@@ -33,11 +24,19 @@ const Navbar = () => {
     account:address
   });
   const isOwner = ownerAddress && ownerAddress === address ? true : false;
-
   useEffect(() => {
+    const fetchBalance = async () => {
+      if (address) {
+        const balance:GetBalanceReturnType = await getBalance(config, {
+          address: address as `0x${string}`,
+          token: USDC_ADDRESS
+        })
+        setBalance(balance.value);
+      }
+    }
     fetchBalance();
     refetchOwner();
-  }, [balance, ownerAddress]);
+  }, [address,refetchOwner]);
 
   return (
     <nav className="flex items-center justify-between px-6 py-4 bg-white shadow-md">
@@ -45,7 +44,7 @@ const Navbar = () => {
       <div className="flex items-center">
         <Link href="/">
           <Image
-            src="/logo.png" // Make sure to add your logo in the public folder
+            src="/images/logo.png" // Make sure to add your logo in the public folder
             alt="Logo"
             width={120}
             height={40}
@@ -59,17 +58,17 @@ const Navbar = () => {
         <Link href="/" className="text-gray-700 hover:text-gray-900">
           Home
         </Link>
-        <Link href="/services" className="text-gray-700 hover:text-gray-900">
-          Services
-        </Link>
-        <Link href="/about" className="text-gray-700 hover:text-gray-900">
-          About
+        <Link href="/projects" className="text-gray-700 hover:text-gray-900">
+          Projects
         </Link>
         {isConnected && isOwner && (
           <Link href="/admin" className="text-gray-700 hover:text-gray-900">
             Administration
           </Link>
         )}
+        <Link href="/about" className="text-gray-700 hover:text-gray-900">
+          About
+        </Link>
       </div>
       {isConnected && (<div className="flex items-center space-x-8">
             {formatUnits(balance, 6)} &nbsp; <Image

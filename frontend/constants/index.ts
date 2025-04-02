@@ -1,5 +1,5 @@
 export const USDC_ADDRESS="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-export const PROJECT_FACTORY_CONTRACT_ADDRESS="0xa86582Ad5E80abc19F95f8A9Fb3905Cda0dAbd59"
+export const PROJECT_FACTORY_CONTRACT_ADDRESS="0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73"
 export const PROJECT_FACTORY_ABI=[
   {
     "inputs": [
@@ -75,6 +75,25 @@ export const PROJECT_FACTORY_ABI=[
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "allProjects",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "_symbol",
         "type": "string"
@@ -90,22 +109,9 @@ export const PROJECT_FACTORY_ABI=[
         "type": "uint256"
       }
     ],
-    "name": "deployProject",
+    "name": "createProject",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getProjects",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -159,8 +165,13 @@ export const PROJECT_CONTRACT_ABI = [
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
         "internalType": "string",
-        "name": "_symbol",
+        "name": "_symbolIvv",
         "type": "string"
       },
       {
@@ -293,7 +304,7 @@ export const PROJECT_CONTRACT_ABI = [
     "name": "ivv",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IERC20",
         "name": "",
         "type": "address"
       }
@@ -395,10 +406,10 @@ export const PROJECT_CONTRACT_ABI = [
   },
   {
     "inputs": [],
-    "name": "usdcAddress",
+    "name": "usdc",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IERC20",
         "name": "",
         "type": "address"
       }

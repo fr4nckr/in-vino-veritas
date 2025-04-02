@@ -16,9 +16,9 @@ const CreateProject = () => {
       writeContract({
           address: PROJECT_FACTORY_CONTRACT_ADDRESS,
           abi: PROJECT_FACTORY_ABI,
-          functionName: "deployProject",
+          functionName: "createProject",
           account: address,
-          args: [projectName, tokenSymbol, projectValue]
+          args: [tokenSymbol, projectName, projectValue]
       })
   }
 

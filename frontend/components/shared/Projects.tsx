@@ -1,10 +1,11 @@
 'use client'; 
 import { useState, useEffect } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { publicClient } from "@/utils/client";
 import { parseAbiItem } from 'viem'
 import ProjectDetails from "./ProjectDetails";
-import { PROJECT_FACTORY_CONTRACT_ADDRESS } from "@/constants";
+import { PROJECT_FACTORY_ABI, PROJECT_FACTORY_CONTRACT_ADDRESS } from "@/constants";
+import RegisterInvestors from "./RegisterInvestors";
 // Define a type for the job structure
 type Project = {
   projectAddress: `0x${string}` | undefined;
@@ -12,7 +13,14 @@ type Project = {
 };
 const Projects = () => {
     const {address} = useAccount();
+    const { data: ownerAddress} = useReadContract({
+      address: PROJECT_FACTORY_CONTRACT_ADDRESS,
+      abi: PROJECT_FACTORY_ABI,
+      functionName: "owner",
+      account:address
+    });
 
+    const isOwner = ownerAddress && ownerAddress === address ? true : false;
     // Use the Project type with useState
     const [projects, setProjects] = useState<Project[]>([]);
     const getEvents = async () => {
@@ -26,7 +34,6 @@ const Projects = () => {
       const [projectAddedLogs] = await Promise.all([
         getProjectAdded
       ]);
-      console.log("projectAddedLogs" ,projectAddedLogs);
        
       const allProjects = projectAddedLogs.map((projectAdded) => {
         return {
@@ -48,13 +55,17 @@ const Projects = () => {
     }, [address])
 
     return (
-      <>
-        <h2 className="text-lg font-bold mb-2">Project list</h2>
-        {projects.map((project, index) => (
-          <ProjectDetails key={index} projectAddress={project.projectAddress} />
-        ))}
-      </>
-      
+      <div className="container mx-auto px-4 py-8">
+        <h2 className="text-3xl font-bold mb-8">Projets Disponibles</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projects.map((project, index) => (
+            <div key={index}>
+              <ProjectDetails key={index + 'projects'} isOwner={isOwner} projectAddress={project.projectAddress} />
+              <RegisterInvestors key={index+'register'} projectAddress={project.projectAddress} />
+            </div>
+          ))}
+        </div>
+      </div>
     );
   };
   export default Projects;

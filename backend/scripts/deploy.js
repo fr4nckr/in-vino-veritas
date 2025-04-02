@@ -26,10 +26,11 @@ async function main() {
   const ivvProjectFactoryContract = await hre.ethers.getContractFactory('InVinoVeritasProjectFactory');
   const ivvProjectFactory = await ivvProjectFactoryContract.deploy(USDC);
   await ivvProjectFactory.waitForDeployment();
-  console.log(ivvProjectFactory.target);
-  await ivvProjectFactory.deployProject('IVV_BRDX', 'Test Project', 1000);
-  const projects = await ivvProjectFactory.allProjects();
-  console.log(projects);
+  console.log("Factory Contract deployed at address: ", ivvProjectFactory.target);
+  await ivvProjectFactory.createProject('IVV_BRDX', 'Test Project', 1000);
+  const deployedProjectAddress = await ivvProjectFactory.allProjects(0);
+  console.log("Deployed project address: ", deployedProjectAddress);
+
 }
 
 main().catch(console.error);

@@ -49,7 +49,7 @@ contract InVinoVeritasProjectFactory is Ownable {
         require(keccak256(abi.encode(_name)) != keccak256(abi.encode("")), 'Project Name is required');
         require(_projectValue > 0, "Project value must be greater than 0");
 
-        address ivvProjectAddress = address(new InVinoVeritasProject(_symbol, usdcAddress, _name, _projectValue));
+        address ivvProjectAddress = address(new InVinoVeritasProject(owner(), _symbol, usdcAddress, _name, _projectValue));
         allProjects.push(ivvProjectAddress);
         emit ProjectDeployed (ivvProjectAddress, _projectValue);        
     }

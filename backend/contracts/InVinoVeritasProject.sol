@@ -72,7 +72,8 @@ contract InVinoVeritasProject is Ownable {
      * @param _projectName The name of the project
      * @param _projectValue The estimated value of the project in USD
      */
-    constructor(string memory _symbolIvv, address _usdcAddress, string memory _projectName, uint _projectValue) Ownable(msg.sender) {   
+    constructor(address _owner, string memory _symbolIvv, address _usdcAddress, string memory _projectName, uint _projectValue) Ownable(_owner) {   
+        require(_owner != address(0), "Owner address is not set");
          projectName = _projectName;
          projectValue = _projectValue;
          
@@ -94,7 +95,7 @@ contract InVinoVeritasProject is Ownable {
      * @notice Start the project sale
      * @dev This function can only be called by the owner and will be used to start the project sale
      */
-    function startProjectSale () external onlyOwner {
+    function startProjectSale() external onlyOwner {
         require(projectStatus == ProjectStatus.ToCome, "Project is not to come");
         projectStatus = ProjectStatus.OnSale;
         emit ProjectStatusChange(ProjectStatus.ToCome, ProjectStatus.OnSale);
@@ -130,9 +131,10 @@ contract InVinoVeritasProject is Ownable {
     function buyLandPiece(uint256 _amount) external onlyRegisteredInvestors {
         require(_amount > 0, "You have to send a positive USDC amount");
         require(projectStatus == ProjectStatus.OnSale, "Project is not on sale");
-        uint256 usdcAmountIn = _amount * 10 ** 6;
+        // uint256 usdcAmountIn = _amount * 10 ** 6;
+        uint256 usdcAmountIn = _amount;
         require(usdc.balanceOf(msg.sender) >= usdcAmountIn, "Not enough USDC to buy");
-        uint256 ivvAmountOut = Math.mulDiv(_amount, 10 ** 18,  exchangeRate);
+        uint256 ivvAmountOut = Math.mulDiv(_amount / 10 ** 6, 10 ** 18,  exchangeRate);
         require(ivv.balanceOf(address(this)) >= ivvAmountOut, "Not enough project pieces available for sale");
 
         // Check if this purchase would exceed the total supply

@@ -40,9 +40,6 @@ contract InVinoVeritasProjectFactory is Ownable {
      * @param _symbol The symbol of the token associated with the project
      * @param _name The name of the project to deploy
      * @param _projectValue The estimated project value in USD
-     * @custom:throws "Symbol is required" if the symbol is empty
-     * @custom:throws "Project Name is required" if the name is empty
-     * @custom:throws "Project value must be greater than 0" if the project value is 0
      */    
     function createProject (string memory _symbol, string memory _name,  uint256 _projectValue) external onlyOwner {
         require(keccak256(abi.encode(_symbol)) != keccak256(abi.encode("")), 'Symbol is required');

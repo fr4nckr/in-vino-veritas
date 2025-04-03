@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./IVV.sol";
 
 /**
@@ -13,6 +13,7 @@ import "./IVV.sol";
  */
 contract InVinoVeritasProject is Ownable {
     
+    using SafeERC20 for IERC20;
     IERC20 public immutable usdc;
     IERC20 public immutable ivv;
 
@@ -21,15 +22,17 @@ contract InVinoVeritasProject is Ownable {
     uint256 public projectValue;
 
     uint256 private immutable exchangeRate = 50;
-    
+
     mapping (address => Investor) investors;
 
     /**
      * @notice Struct representing an investor
-     * @param isRegistered Whether the investor is registered (off-chain KYC)
+     * @param isRegistered Whether the investor is registered for this project
+     * @param isValidated Whether the investor is validated by the owner (KYC validated)
      */
     struct Investor {
-        bool isRegistered;
+        InvestorStatus investorStatus;
+        uint256 amountInvested;
     }
 
     /**
@@ -45,12 +48,33 @@ contract InVinoVeritasProject is Ownable {
         OnSale,
         SoldOut
     }
+
+    /**
+     * @notice Enum representing the status of the investor
+     */
+    enum InvestorStatus {
+        NotRegistered,
+        Registered,
+        Validated,
+        Denied
+    }
     
     /**
      * @notice Event emitted when an investor is registered
      * @param investorAddress The address of the investor
      */
     event InvestorRegistered(address investorAddress);
+    /**
+     * @notice Event emitted when an investor is validated
+     * @param investorAddress The address of the investor
+     */
+    event InvestorValidated(address investorAddress);
+
+    /**
+     * @notice Event emitted when an investor is validated
+     * @param investorAddress The address of the investor
+     */
+    event InvestorDenied(address investorAddress);
 
     /**
      * @notice Event emitted when the project status changes
@@ -62,8 +86,10 @@ contract InVinoVeritasProject is Ownable {
     /**
      * @notice Event emitted when a piece of the land has been bought
      * @param investorAddress Address of the investor who bought the piece of the land
+     * @param amountInvested Amount of USDC invested by the investor
+     * @param ivvAmount Amount of IVV tokens received by the investor
      */
-    event LandPieceBought(address investorAddress);
+    event LandPieceBought(address investorAddress, uint256 amountInvested, uint256 ivvAmount);
 
     /**
      * @notice Constructor of the IVVProject contract
@@ -73,21 +99,27 @@ contract InVinoVeritasProject is Ownable {
      * @param _projectValue The estimated value of the project in USD
      */
     constructor(address _owner, string memory _symbolIvv, address _usdcAddress, string memory _projectName, uint _projectValue) Ownable(_owner) {   
-        require(_owner != address(0), "Owner address is not set");
-         projectName = _projectName;
-         projectValue = _projectValue;
-         
-         // Calculate initial supply (18 decimals)
-         uint256 initialSupply = (_projectValue * 10 ** 18) / exchangeRate;
-         ivv = new IVV(_symbolIvv, initialSupply);
-         usdc = IERC20(_usdcAddress);
+        require(keccak256(abi.encode(_symbolIvv)) != keccak256(abi.encode("")), 'Symbol is required');
+        require(_usdcAddress != address(0), "USDC address is not set");
+        require(keccak256(abi.encode(_projectName)) != keccak256(abi.encode("")), 'Project name is required');
+        require(_projectValue > 0, "Project value must be greater than 0");
+        projectName = _projectName;
+        projectValue = _projectValue;
+        uint256 initialSupply = Math.mulDiv(_projectValue, 10 ** 18,  exchangeRate);
+        ivv = new IVV(_symbolIvv, initialSupply);
+        usdc = IERC20(_usdcAddress);
     }
     
     /**
-     * @notice Modifier to check if the investor is registered
+     * @notice Modifier to check if the investor is registered to participate in the project
      */
     modifier onlyRegisteredInvestors() {
-        require(investors[msg.sender].isRegistered, "You're not a registered investor");
+        require(investors[msg.sender].investorStatus == InvestorStatus.Registered, "You are not a registered investor");
+        _;
+    }
+
+    modifier onlyValidatedInvestors() {
+        require(investors[msg.sender].investorStatus == InvestorStatus.Validated, "You are not a validated investor");
         _;
     }
     
@@ -96,7 +128,7 @@ contract InVinoVeritasProject is Ownable {
      * @dev This function can only be called by the owner and will be used to start the project sale
      */
     function startProjectSale() external onlyOwner {
-        require(projectStatus == ProjectStatus.ToCome, "Project is not to come");
+        require(projectStatus == ProjectStatus.ToCome, "Project cannot be started");
         projectStatus = ProjectStatus.OnSale;
         emit ProjectStatusChange(ProjectStatus.ToCome, ProjectStatus.OnSale);
     }
@@ -105,22 +137,56 @@ contract InVinoVeritasProject is Ownable {
      * @notice End the project sale
      * @dev This function can only be called by the owner and will be used to end the project sale when all conditions are met
      */
-    function endProjectSale () external onlyOwner {
+    function endProjectSale() external onlyOwner {
         require(projectStatus == ProjectStatus.OnSale, "Project is not on sale");
         projectStatus = ProjectStatus.SoldOut;
         emit ProjectStatusChange(ProjectStatus.OnSale, ProjectStatus.SoldOut);
     }
-
+    
     /**
      * @notice Validate an investor
      * @dev This function can only be called by the owner and will be used to validate an investor after he passes the KYC procedure
      * @param _investorAddress The address of the investor that has been validated
      */
-    function registerInvestor(address _investorAddress) external onlyOwner {
+    function validateInvestor(address _investorAddress) external onlyOwner {
         require(projectStatus != ProjectStatus.SoldOut, "Project is already Soldout");
-        require(investors[_investorAddress].isRegistered == false, "You're already registered");
-        investors[_investorAddress].isRegistered = true;
-        emit InvestorRegistered(_investorAddress);
+        require(investors[_investorAddress].investorStatus == InvestorStatus.Registered, "You're not registered");
+        require(investors[_investorAddress].investorStatus != InvestorStatus.Validated, "You're already validated");
+        investors[_investorAddress].investorStatus = InvestorStatus.Validated;
+        emit InvestorValidated(_investorAddress);
+    }
+
+    /**
+     * @notice Refuse an investor
+     * @dev This function can only be called by the owner and will be used to refuse an investor
+     * @param _investorAddress The address of the investor that has been refused
+     */
+    function denyInvestor(address _investorAddress) external onlyOwner {
+        require(projectStatus != ProjectStatus.SoldOut, "Project is already Soldout");
+        require(investors[_investorAddress].investorStatus == InvestorStatus.Registered, "You're not registered");
+        require(investors[_investorAddress].investorStatus != InvestorStatus.Denied, "You're already denied");
+        investors[_investorAddress].investorStatus = InvestorStatus.Denied;
+        emit InvestorDenied(_investorAddress);
+    }
+
+    /**
+     * @notice Get the status of an investor
+     * @param _investorAddress The address of the investor
+     * @return The status of the investor
+     */
+    function getInvestorStatus(address _investorAddress) external view returns (InvestorStatus) {
+        return (investors[_investorAddress].investorStatus);
+    }
+
+    /**
+     * @notice Let an investor an investor
+     * @dev This function can only be called by the owner and will be used to validate an investor after he passes the KYC procedure
+     */
+    function askForRegistration() external {
+        require(projectStatus != ProjectStatus.SoldOut, "Project is already Soldout");
+        require(investors[msg.sender].investorStatus == InvestorStatus.NotRegistered || investors[msg.sender].investorStatus == InvestorStatus.Denied, "You're already registered or validated");
+        investors[msg.sender].investorStatus = InvestorStatus.Registered;
+        emit InvestorRegistered(msg.sender);
     }
 
     /**
@@ -128,24 +194,17 @@ contract InVinoVeritasProject is Ownable {
      * @param _amount USDC amount to buy with
      * @dev This function can only be called by a registered investor and will be used to buy a project piece. Remember to make the usdc approval.
      */
-    function buyLandPiece(uint256 _amount) external onlyRegisteredInvestors {
-        require(_amount > 0, "You have to send a positive USDC amount");
+    function buyLandPiece(uint256 _amount) external onlyValidatedInvestors {
         require(projectStatus == ProjectStatus.OnSale, "Project is not on sale");
-        // uint256 usdcAmountIn = _amount * 10 ** 6;
-        uint256 usdcAmountIn = _amount;
-        require(usdc.balanceOf(msg.sender) >= usdcAmountIn, "Not enough USDC to buy");
-        uint256 ivvAmountOut = Math.mulDiv(_amount / 10 ** 6, 10 ** 18,  exchangeRate);
+        require(_amount > 0, "You have to send a positive USDC amount");
+        require(usdc.balanceOf(msg.sender) >= _amount, "Not enough USDC to buy");
+        uint256 ivvAmountOut = Math.mulDiv(_amount, 10 ** 12,  exchangeRate);
         require(ivv.balanceOf(address(this)) >= ivvAmountOut, "Not enough project pieces available for sale");
 
-        // Check if this purchase would exceed the total supply
-        require(ivvAmountOut <= ivv.totalSupply(), "Purchase would exceed total supply");
-
-        // Transfer USDC from buyer to contract
-        usdc.transferFrom(msg.sender, address(this), usdcAmountIn);
+        investors[msg.sender].amountInvested += _amount;
+        usdc.safeTransferFrom(msg.sender, address(this), _amount);
+        ivv.safeTransfer(msg.sender, ivvAmountOut);
         
-        // Transfer IVV tokens from contract to buyer
-        ivv.transfer(msg.sender, ivvAmountOut);
-        
-        emit LandPieceBought(msg.sender);
+        emit LandPieceBought(msg.sender, _amount, ivvAmountOut);
     }
 }

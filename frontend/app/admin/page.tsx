@@ -1,6 +1,5 @@
 'use client';
-import CreateProject from "@/components/shared/CreateProject";
-import Projects from "@/components/shared/Projects";
+import AdministrationPanel from "@/components/shared/AdministrationPanel";
 import { PROJECT_FACTORY_CONTRACT_ADDRESS, PROJECT_FACTORY_ABI } from "@/constants";
 import { useEffect } from "react";
 import { useAccount, useReadContract } from "wagmi";
@@ -21,8 +20,7 @@ export default function Admin() {
     <div className="p-5">
       {isOwner && (
         <>
-          <CreateProject />
-          <Projects />
+          <AdministrationPanel />
         </>
       )}
       {!isOwner && (

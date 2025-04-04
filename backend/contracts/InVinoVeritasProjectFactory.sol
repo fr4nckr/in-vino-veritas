@@ -15,7 +15,7 @@ contract InVinoVeritasProjectFactory is Ownable {
     address public immutable usdcAddress;
     
     /// @notice Array of all deployed project addresses
-    address[] public allProjects;
+    address[] private allProjects;
     
     /**
      * @notice Emitted when a new project is deployed
@@ -49,5 +49,9 @@ contract InVinoVeritasProjectFactory is Ownable {
         address ivvProjectAddress = address(new InVinoVeritasProject(owner(), _symbol, usdcAddress, _name, _projectValue));
         allProjects.push(ivvProjectAddress);
         emit ProjectDeployed (ivvProjectAddress, _projectValue);        
+    }
+
+    function getAllProjects() external view returns (address[] memory) {
+        return allProjects;
     }
 }

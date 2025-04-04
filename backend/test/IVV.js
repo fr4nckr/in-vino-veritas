@@ -219,16 +219,12 @@ describe("In Vino Veritas tests", function () {
         await ivvProjectFactoryDeployed.createProject('IVV_PRJ2', 'Project2',  5000000);
         await ivvProjectFactoryDeployed.createProject('IVV_PRJ3', 'Project3',  10000000);
         
-        // Get the first project address from the array
-        const projectNumber = await ivvProjectFactoryDeployed.allProjects(0);
-        const projectNumber2 = await ivvProjectFactoryDeployed.allProjects(1);
-        const projectNumber3 = await ivvProjectFactoryDeployed.allProjects(2);
-        expect(projectNumber).to.not.equal(ethers.ZeroAddress);
-        expect(projectNumber2).to.not.equal(ethers.ZeroAddress);
-        expect(projectNumber3).to.not.equal(ethers.ZeroAddress);
+        // Verify the number of projects is 3
+        const projectNumber = await ivvProjectFactoryDeployed.getAllProjects();
+        expect(projectNumber.length).to.equal(3);
 
         //Retrieve the project
-        const ivvProject = await ethers.getContractAt("InVinoVeritasProject", projectNumber);
+        const ivvProject = await ethers.getContractAt("InVinoVeritasProject", projectNumber[0]);
         //Verify the owner is the owner of the factory and not the factory contract address
         expect(await ivvProject.owner()).to.equal(owner);
       });

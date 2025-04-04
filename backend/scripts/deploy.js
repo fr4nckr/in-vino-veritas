@@ -23,7 +23,7 @@ async function main() {
     usdc,
     USDC_WHALE,
     signers.map(signer => signer.address),
-    "100000",//100 USDC
+    "100000",
     DECIMALS
   );
 
@@ -32,9 +32,13 @@ async function main() {
   const ivvProjectFactory = await ivvProjectFactoryContract.deploy(USDC);
   await ivvProjectFactory.waitForDeployment();
   console.log("Factory Contract deployed at address: ", ivvProjectFactory.target);
-  await ivvProjectFactory.createProject('IVV_BRDX', 'Test Project', 1000);
-  const deployedProjectAddress = await ivvProjectFactory.allProjects(0);
-  console.log("Deployed project address: ", deployedProjectAddress);
+  await ivvProjectFactory.createProject('IVV_BDX', 'Projet agricole à Bordeaux de 100HA', 100000);
+  await ivvProjectFactory.createProject('IVV_TLS', 'Projet agricole à Toulouse de 50HA', 50000);
+  await ivvProjectFactory.createProject('IVV_AIX', 'Projet agricole à Aix-en-Provence de 200HA', 200000);
+  const deployedProjectAddresses = await ivvProjectFactory.getAllProjects();
+  for (const projectAddress of deployedProjectAddresses) {
+    console.log("Deployed project address: ", projectAddress);
+  }
 
 }
 

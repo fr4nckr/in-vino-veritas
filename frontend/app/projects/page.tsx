@@ -1,7 +1,8 @@
-export default function Projects() {
+import Projects from "@/components/shared/Projects";
+export default function ProjectsPage() {
   return (
    <div>
-    <h1>Projects</h1>
+     <Projects />
    </div>
   );
 }

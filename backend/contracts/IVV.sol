@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-contract IVV is ERC20 {
-     /**
-     * @dev Sets the values for {name} and {symbol}.
-     *
-     * All two of these values are immutable: they can only be set once during
-     * construction.
+pragma solidity 0.8.28;
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
+
+/**
+ * @title IVV
+ * @dev ERC20Capped implementation for In Vino Veritas tokens
+ */
+contract IVV is ERC20Capped { 
+    /**
+     * @dev Constructor for IVV token
+     * @param _symbol The symbol of the token
+     * @param _totalSupply The total supply of the token that will be capped and minted to the owner
      */
-    constructor(string memory _symbol, uint _totalSupply) ERC20 ('In Vino Veritas', _symbol) {
+    constructor(string memory _symbol, uint256 _totalSupply) ERC20 ('In Vino Veritas', _symbol) ERC20Capped(_totalSupply)  {
          _mint(msg.sender, _totalSupply);
     }
-
 }

@@ -1,73 +1,288 @@
 'use client';
-import { useAccount} from 'wagmi';
+import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract} from 'wagmi';
 import { PROJECT_CONTRACT_ABI } from '@/constants';
 import { multicall } from 'viem/actions';
 import { publicClient } from '@/utils/client';
 import { useEffect, useState } from 'react';
 import { getToken, GetTokenReturnType } from '@wagmi/core'
 import { config } from '@/utils/wagmi';
+import { Alert } from '../ui/alert';
+import { Button } from '../ui/button';
+import { formatUnits } from 'viem/utils';
+import { erc20Abi } from 'viem';
+import ApproveAndBuy from './ApproveAndBuy';
 
-const ProjectDetail = ({ projectAddress }: { projectAddress: `0x${string}` | undefined }) => {
+const ProjectDetail = ({ isOwner, projectAddress }: { isOwner: boolean, projectAddress: string }) => {
+
   const { address } = useAccount();
-
-  const projectContract = {
-    address: projectAddress as `0x${string}`,
-    abi: PROJECT_CONTRACT_ABI, 
-    account: address
-  } as const
 
   const [projectName, setProjectName] = useState<string | undefined>("");
   const [projectStatus, setProjectStatus] = useState<number | undefined>(0);
   const [ivv, setIvv] = useState<GetTokenReturnType | undefined>(undefined);
- 
+  const [projectValue, setProjectValue] = useState<string>("0");
+  const [investorStatus, setInvestorStatus] = useState<number | undefined>(0);
+
+  const { data: ivvBalance} = useReadContract({
+    address: ivv?.address as `0x${string}`,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: [address as `0x${string}`]
+  });
+
+  const { data: projectIvvBalance} = useReadContract({
+    address: ivv?.address as `0x${string}`,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: [projectAddress as `0x${string}`]
+  });
+
+  const { data: hash, error, writeContract } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
+
+  const handleStartProjectSale = async () => {
+    writeContract({
+      address: projectAddress as `0x${string}`,
+      abi: PROJECT_CONTRACT_ABI,
+      functionName: "startProjectSale",
+      args: [],
+      account: address
+    });
+  };
+
+  const handleEndProjectSale = async () => {
+    writeContract({
+      address: projectAddress as `0x${string}`,
+      abi: PROJECT_CONTRACT_ABI,
+      functionName: "endProjectSale",
+      args: [],
+      account: address
+    });
+  };
+
+  const handleAskForRegistration = async () => {
+    writeContract({
+      address: projectAddress as `0x${string}`,
+      abi: PROJECT_CONTRACT_ABI,
+      functionName: "askForRegistration",
+      args: [],
+      account: address
+    });
+  };
+
   useEffect(() => {
-    const fetchData  = async () => {
-      const projectInformations = await multicall(publicClient, ({ 
-        contracts: [
-          {
-            ...projectContract,
-            functionName: 'projectName'
-          },
-          {
-            ...projectContract,
-            functionName: 'projectStatus'
-          },
-          {
-            ...projectContract,
-            functionName: 'ivv'
-          }
-        ],
-        multicallAddress: '0xcA11bde05977b3631167028862bE2a173976CA11' 
-      }));
+    console.log('use effect');
+    const projectContract = {
+      address: projectAddress as `0x${string}`,
+      abi: PROJECT_CONTRACT_ABI, 
+      account: address
+    } as const;
+
+    const getAllEvents = async() => {
+      if(address && projectAddress) {
+        const projectInformations = await multicall(publicClient, ({ 
+          contracts: [
+            {
+              ...projectContract,
+              functionName: 'projectName'
+            },
+            {
+              ...projectContract,
+              functionName: 'projectStatus'
+            },
+            {
+              ...projectContract,
+              functionName: 'ivv'
+            },
+            {
+              ...projectContract,
+              functionName: 'projectValue'
+            }, 
+            {
+              ...projectContract,
+              functionName: 'getInvestorStatus', 
+              args: [address as `0x${string}`]
+            }
+          ],
+          multicallAddress: '0xcA11bde05977b3631167028862bE2a173976CA11' 
+        }));
     
-      const ivvToken = await getToken(config,{
-        address: projectInformations[2].result as `0x${string}`,
-      })
+        const ivvToken = await getToken(config, {
+          address: projectInformations[2].result as `0x${string}`,
+        });
+    
+        setProjectName(projectInformations[0].result as string);
+        setProjectStatus(projectInformations[1].result as number);
+        setIvv(ivvToken);
+        setProjectValue(BigInt(projectInformations[3].result as bigint).toString());
+        setInvestorStatus(projectInformations[4].result as number);
 
-      setProjectName(projectInformations[0].result as string);
-      setProjectStatus(projectInformations[1].result as number);
-      setIvv(ivvToken);
-
+      }
     }
+    getAllEvents();
+  }, [address, projectAddress, projectStatus, isConfirmed]);
 
-    fetchData();
-   
-  }, [address]);
+  const getStatusText = (status: number) => {
+    switch(status) {
+      case 0: return "À venir";
+      case 1: return "En vente";
+      case 2: return "Vendu";
+      default: return "Inconnu";
+    }
+  };
 
-  // console.log("projectName", projectName);
-  // console.log("projectStatus", projectStatus);
-  // console.log("ivv", ivv);
-  
-  // Determine the background color based on job status
-  const bgColor = projectStatus === 0 ? 'bg-blue-100' : 'bg-red-100';
+  const getStatusColor = (status: number) => {
+    switch(status) {
+      case 0: return "bg-blue-100 text-blue-800";
+      case 1: return "bg-green-100 text-green-800";
+      case 2: return "bg-gray-100 text-gray-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getInvestorStatusText = (status: number) => {
+    switch(status) {
+      case 0: return "Non enregistré";
+      case 1: return "En attente de validation";
+      case 2: return "Validé";
+      case 3: return "Refusé";
+      default: return "Inconnu";
+    }
+  };
+
+  const getInvestorStatusColor = (status: number) => {
+    switch(status) {
+      case 0: return "bg-blue-100 text-blue-800";
+      case 1: return "bg-orange-100 text-orange-800";
+      case 2: return "bg-gray-100 text-gray-800";
+      case 3: return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
 
   return (
-      <div className={`border rounded<lg p-4 mb-4 shadow-md ${bgColor}`}>
-        <h2 className="text-xl font-semibold mb-2">{String(projectName || "No Description")}</h2>
-        <p className="text-sm text-gray-600 mb-1"><strong>Status:</strong> {projectStatus === 0 ? 'Soon' : 'Closed'}</p>
-        <p className="text-sm text-gray-600 mb-1"><strong>Total Supply:</strong> {ivv && ivv.totalSupply ? BigInt(ivv?.totalSupply.value).toString() : '/'}</p>
-        <p className="text-sm text-gray-600 mb-1"><strong>IVV Token:</strong> ${ivv && ivv?.symbol}</p>
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      {/* Transaction Status Alerts */}
+      <div className="p-4">
+        {hash && (
+          <Alert className="mb-2 bg-blue-50 text-blue-700 border-blue-200">
+            <p className="font-medium">Transaction Hash:</p>
+            <p className="text-sm break-all">{hash}</p>
+          </Alert>
+        )}
+        {isConfirming && (
+          <Alert className="mb-2 bg-yellow-50 text-yellow-700 border-yellow-200">
+            <p className="font-medium flex items-center">
+              <span className="mr-2 animate-spin">⟳</span>
+              En attente de confirmation...
+            </p>
+          </Alert>
+        )}
+        {isConfirmed && (
+          <Alert className="mb-2 bg-green-50 text-green-700 border-green-200">
+            <p className="font-medium flex items-center">
+              <span className="mr-2">✓</span>
+              Transaction confirmée
+            </p>
+          </Alert>
+        )}
+        {error && (
+          <Alert className="mb-2 bg-red-50 text-red-700 border-red-200">
+            <p className="font-medium">Erreur:</p>
+            <p className="text-sm">{error ? error.message : ''}</p>
+          </Alert>
+        )}
       </div>
+
+      {/* Project Information */}
+      <div className="p-6">
+        {/* First line: Project name, value, and status */}
+        <div className="flex flex-wrap items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">{String(projectName || "Sans nom")}</h2>
+          <div className="flex items-center gap-4">
+            <p className="text-gray-600">Valeur: {projectValue} $</p>
+            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(projectStatus || 0)}`}>
+              {getStatusText(projectStatus || 0)}
+            </span>
+          </div>
+        </div>
+
+        {/* Token Information */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          <h3 className="text-lg font-semibold mb-2">Informations sur le token associé au projet</h3>
+          <div className="flex flex-wrap gap-6">
+            <div>
+              <p className="text-sm text-gray-600">Total Supply: {ivv?.totalSupply ? formatUnits(ivv.totalSupply.value, ivv.decimals).toString() : '/'} {ivv?.symbol || '/'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Supply disponible à l&lsquo;achat : {projectIvvBalance ? formatUnits(projectIvvBalance as bigint, 18).toString() + ' ' + ivv?.symbol : '0'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Votre part: {ivvBalance ? formatUnits(ivvBalance as bigint, 18).toString() + ' $' + ivv?.symbol : '0'}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Investor Information */}
+        {!isOwner && (
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          <h3 className="text-lg font-semibold mb-2">Informations sur l&lsquo;investisseur</h3>
+          <div className="flex flex-wrap gap-6">
+            <div>
+              <p className="text-sm text-gray-600">Statut:  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getInvestorStatusColor(investorStatus || 0)}`}>
+                {getInvestorStatusText(investorStatus || 0)}
+              </span></p>
+            </div>
+          </div>
+        </div>
+        )}
+        {/* Action Buttons */}
+        <div className="space-y-4">
+          {/* Token Purchase Section */}
+          {projectStatus === 1 && investorStatus === 2 && (
+            <ApproveAndBuy projectAddress={projectAddress} />
+          )}
+          {!isOwner && projectStatus === 1 && investorStatus !== 2 && (
+            <div className="pt-4 border-t">
+              <p>Vous ne pouvez pas acheter de parts car vous n&lsquo;êtes pas validé ou que le projet n&lsquo;est pas en cours de vente</p>
+            </div>
+          )}
+
+          {/* Registration Button */}
+          {!isOwner && projectStatus !== 2 && investorStatus === 0 && (
+            <div className="pt-4 border-t">
+              <Button 
+                onClick={handleAskForRegistration}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+              >
+                S&lsquo;enregistrer
+              </Button>
+            </div>
+          )}
+
+          {/* Owner Actions */}
+          {isOwner && projectStatus === 0 && (
+            <div className="pt-4 border-t">
+              <Button 
+                onClick={handleStartProjectSale}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+              >
+                Démarrer la vente
+              </Button>
+            </div>
+          )}
+          {isOwner && projectStatus === 1 && (
+            <div className="pt-4 border-t">
+              <Button 
+                onClick={handleEndProjectSale}
+                className="w-full bg-red-600 hover:bg-red-700 text-white"
+              >
+                Clôturer la vente
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 

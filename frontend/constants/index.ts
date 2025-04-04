@@ -1,5 +1,5 @@
 export const USDC_ADDRESS="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-export const PROJECT_FACTORY_CONTRACT_ADDRESS="0xC6A09F78CfB85275e5261200442b0B9AA9D4D0ce"
+export const PROJECT_FACTORY_CONTRACT_ADDRESS="0xc565EB7363769f8ffAe0005285ccD854c631A0a0"
 export const PROJECT_FACTORY_ABI=[
   {
     "inputs": [
@@ -90,14 +90,14 @@ export const PROJECT_FACTORY_ABI=[
         "type": "uint256"
       }
     ],
-    "name": "deployProject",
+    "name": "createProject",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "getProjects",
+    "name": "getAllProjects",
     "outputs": [
       {
         "internalType": "address[]",
@@ -155,12 +155,17 @@ export const PROJECT_FACTORY_ABI=[
     "type": "function"
   }
 ]
-export const PROJECT_CONTRACT_ABI =  [
+export const PROJECT_CONTRACT_ABI = [
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
         "internalType": "string",
-        "name": "_symbol",
+        "name": "_symbolIvv",
         "type": "string"
       },
       {
@@ -205,6 +210,30 @@ export const PROJECT_CONTRACT_ABI =  [
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "SafeERC20FailedOperation",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "investorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "InvestorDenied",
+    "type": "event"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -225,6 +254,31 @@ export const PROJECT_CONTRACT_ABI =  [
         "internalType": "address",
         "name": "investorAddress",
         "type": "address"
+      }
+    ],
+    "name": "InvestorValidated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "investorAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountInvested",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "ivvAmount",
+        "type": "uint256"
       }
     ],
     "name": "LandPieceBought",
@@ -269,6 +323,13 @@ export const PROJECT_CONTRACT_ABI =  [
     "type": "event"
   },
   {
+    "inputs": [],
+    "name": "askForRegistration",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -276,7 +337,20 @@ export const PROJECT_CONTRACT_ABI =  [
         "type": "uint256"
       }
     ],
-    "name": "buyProjectPiece",
+    "name": "buyLandPiece",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_investorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "denyInvestor",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -289,11 +363,30 @@ export const PROJECT_CONTRACT_ABI =  [
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_investorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getInvestorStatus",
+    "outputs": [
+      {
+        "internalType": "enum InVinoVeritasProject.InvestorStatus",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "ivv",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IERC20",
         "name": "",
         "type": "address"
       }
@@ -354,19 +447,6 @@ export const PROJECT_CONTRACT_ABI =  [
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_investorAddress",
-        "type": "address"
-      }
-    ],
-    "name": "registerInvestor",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
@@ -395,15 +475,28 @@ export const PROJECT_CONTRACT_ABI =  [
   },
   {
     "inputs": [],
-    "name": "usdcAddress",
+    "name": "usdc",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IERC20",
         "name": "",
         "type": "address"
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_investorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "validateInvestor",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

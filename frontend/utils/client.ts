@@ -7,6 +7,7 @@ hardhat : Un objet qui représente la chaîne Hardhat, utilisée pour le dévelo
 */
 import { createPublicClient, http } from 'viem'
 import { sepolia } from 'viem/chains'
+
 const RPC = process.env.NEXT_PUBLIC_ALCHEMY_RPC || "";
 
 /*

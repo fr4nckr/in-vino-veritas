@@ -27,6 +27,16 @@ const AdministrationPanel = () => {
     hash: hashCreateProject, 
   })
 
+  const { data: hashValidateInvestor, error:errorValidateInvestor, isPending:isPendingValidateInvestor, writeContract: writeValidateInvestor } = useWriteContract()
+  const { isLoading: isConfirmingValidate, isSuccess: isConfirmedValidate } = useWaitForTransactionReceipt({
+    hash: hashValidateInvestor, 
+  })
+
+  const { data: hashDenyInvestor, error:errorDenyInvestor, isPending:isPendingDenyInvestor, writeContract: writeDenyInvestor } = useWriteContract()
+  const { isLoading: isConfirmingDeny, isSuccess: isConfirmedDeny } = useWaitForTransactionReceipt({
+    hash: hashDenyInvestor, 
+  })
+
   const handleCreateProject = async() => { 
       writeCreateProject({
           address: PROJECT_FACTORY_CONTRACT_ADDRESS,
@@ -95,12 +105,9 @@ const AdministrationPanel = () => {
         fetchData();
       }
       refetchProjects();
-    }, [address, allProjects, refetchProjects, isConfirmed]);
+    }, [address, allProjects, refetchProjects, isConfirmed, isConfirmedValidate, isConfirmedDeny]);
   
-  const { data: hashValidateInvestor, error:errorValidateInvestor, isPending:isPendingValidateInvestor, writeContract: writeValidateInvestor } = useWriteContract()
-  const { isLoading: isConfirmingValidate, isSuccess: isConfirmedValidate } = useWaitForTransactionReceipt({
-    hash: hashValidateInvestor, 
-  })
+
   const handleValidateInvestor = async(projectAddress: `0x${string}`, investorAddress: `0x${string}`) => { 
     writeValidateInvestor({
       address: projectAddress,
@@ -110,10 +117,7 @@ const AdministrationPanel = () => {
       args: [investorAddress]
     });
   };
-  const { data: hashDenyInvestor, error:errorDenyInvestor, isPending:isPendingDenyInvestor, writeContract: writeDenyInvestor } = useWriteContract()
-  const { isLoading: isConfirmingDeny, isSuccess: isConfirmedDeny } = useWaitForTransactionReceipt({
-    hash: hashDenyInvestor, 
-  })
+ 
   const handleDenyInvestor = async(projectAddress: `0x${string}`, investorAddress: `0x${string}`) => { 
     writeDenyInvestor({
       address: projectAddress,

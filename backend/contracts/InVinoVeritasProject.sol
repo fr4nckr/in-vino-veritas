@@ -16,13 +16,17 @@ contract InVinoVeritasProject is Ownable {
     using SafeERC20 for IERC20;
     IERC20 public immutable usdc;
     IERC20 public immutable ivv;
-
+    
     string public projectName;
 
     uint256 public projectValue;
 
     uint256 private immutable exchangeRate = 50;
 
+    /**
+     * @notice Mapping to store investor information
+     * @dev Maps investor addresses to their status and investment amount
+     */
     mapping (address => Investor) investors;
 
     /**
@@ -71,7 +75,7 @@ contract InVinoVeritasProject is Ownable {
     event InvestorValidated(address investorAddress);
 
     /**
-     * @notice Event emitted when an investor is validated
+     * @notice Event emitted when an investor is denied
      * @param investorAddress The address of the investor
      */
     event InvestorDenied(address investorAddress);
@@ -84,16 +88,23 @@ contract InVinoVeritasProject is Ownable {
     event ProjectStatusChange(ProjectStatus previousStatus, ProjectStatus newStatus);
     
     /**
-     * @notice Event emitted when a piece of the land has been bought
-     * @param investorAddress Address of the investor who bought the piece of the land
+     * @notice Event emitted when a piece of the project has been bought
+     * @param investorAddress Address of the investor who bought the piece of the project
      * @param amountInvested Amount of USDC invested by the investor
      * @param ivvAmount Amount of IVV tokens received by the investor
      */
     event LandPieceBought(address investorAddress, uint256 amountInvested, uint256 ivvAmount);
 
     /**
+     * @notice Event emitted when the treasury has been collected by the deployer
+     * @param treasuryWallet Address of the treasury wallet
+     */
+    event TreasuryCollected(address treasuryWallet);
+
+    /**
      * @notice Constructor of the IVVProject contract
-     * @param _symbolIvv The symbol of the IVV token to deploy and to associated to the project
+     * @param _owner The owner of the project contract
+     * @param _symbolIvv The symbol of the IVV token to deploy and to associate to the project
      * @param _usdcAddress The address of the USDC token that will be used by investors to buy a piece of the project
      * @param _projectName The name of the project
      * @param _projectValue The estimated value of the project in USD
@@ -111,13 +122,8 @@ contract InVinoVeritasProject is Ownable {
     }
     
     /**
-     * @notice Modifier to check if the investor is registered to participate in the project
+     * @notice Modifier to check if the investor is validated
      */
-    modifier onlyRegisteredInvestors() {
-        require(investors[msg.sender].investorStatus == InvestorStatus.Registered, "You are not a registered investor");
-        _;
-    }
-
     modifier onlyValidatedInvestors() {
         require(investors[msg.sender].investorStatus == InvestorStatus.Validated, "You are not a validated investor");
         _;
@@ -135,7 +141,7 @@ contract InVinoVeritasProject is Ownable {
 
     /**
      * @notice End the project sale
-     * @dev This function can only be called by the owner and will be used to end the project sale when all conditions are met
+     * @dev This function can only be called by the owner and will be used to end the project sale
      */
     function endProjectSale() external onlyOwner {
         require(projectStatus == ProjectStatus.OnSale, "Project is not on sale");
@@ -145,7 +151,7 @@ contract InVinoVeritasProject is Ownable {
     
     /**
      * @notice Validate an investor
-     * @dev This function can only be called by the owner and will be used to validate an investor after he passes the KYC procedure
+     * @dev This function can only be called by the owner and will be used to validate an investor after he has been validated through the KYC
      * @param _investorAddress The address of the investor that has been validated
      */
     function validateInvestor(address _investorAddress) external onlyOwner {
@@ -157,9 +163,9 @@ contract InVinoVeritasProject is Ownable {
     }
 
     /**
-     * @notice Refuse an investor
-     * @dev This function can only be called by the owner and will be used to refuse an investor
-     * @param _investorAddress The address of the investor that has been refused
+     * @notice Deny an investor
+     * @dev This function can only be called by the owner and will be used to deny an investor
+     * @param _investorAddress The address of the investor that has been denied
      */
     function denyInvestor(address _investorAddress) external onlyOwner {
         require(projectStatus != ProjectStatus.SoldOut, "Project is already Soldout");
@@ -179,8 +185,8 @@ contract InVinoVeritasProject is Ownable {
     }
 
     /**
-     * @notice Let an investor an investor
-     * @dev This function can only be called by the owner and will be used to validate an investor after he passes the KYC procedure
+     * @notice Let an investor ask to be registered on a project
+     * @dev This function can only be called by any user that wants to be registered on a project
      */
     function askForRegistration() external {
         require(projectStatus != ProjectStatus.SoldOut, "Project is already Soldout");
@@ -192,7 +198,7 @@ contract InVinoVeritasProject is Ownable {
     /**
      * @notice Buy a land piece of the project in USDC
      * @param _amount USDC amount to buy with
-     * @dev This function can only be called by a registered investor and will be used to buy a project piece. Remember to make the usdc approval.
+     * @dev This function can only be called by a validated investor and will be used to buy a project piece. Remember to make the usdc approval before calling this function.
      */
     function buyLandPiece(uint256 _amount) external onlyValidatedInvestors {
         require(projectStatus == ProjectStatus.OnSale, "Project is not on sale");
@@ -206,5 +212,18 @@ contract InVinoVeritasProject is Ownable {
         ivv.safeTransfer(msg.sender, ivvAmountOut);
         
         emit LandPieceBought(msg.sender, _amount, ivvAmountOut);
+    }
+
+    /**
+     * @notice Withdraw USDC from the contract to the treasury wallet
+     * @dev This function can only be called by the owner and will be used to withdraw USDC from the contract to the treasury wallet once the project is sold out
+     * @param _treasuryWallet Address of the treasury wallet
+     */
+    function withdrawUsdc(address _treasuryWallet) external onlyOwner {
+        require(projectStatus == ProjectStatus.SoldOut, "Project is not sold out");
+        require(_treasuryWallet != address(0), "Treasury wallet is not set");
+        require(usdc.balanceOf(address(this)) > 0, "Not enough USDC to withdraw");
+        usdc.safeTransfer(_treasuryWallet, usdc.balanceOf(address(this)));
+        emit TreasuryCollected(_treasuryWallet);
     }
 }

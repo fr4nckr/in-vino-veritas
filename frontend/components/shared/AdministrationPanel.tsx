@@ -57,7 +57,7 @@ const AdministrationPanel = () => {
               const investorRegisteredLogs = await publicClient.getLogs({
                 address: projectAddress as `0x${string}`,
                 event: parseAbiItem('event InvestorRegistered(address investorAddress)'),
-                fromBlock: 0n,
+                fromBlock: 8054959n,
                 toBlock: 'latest'
               });
                 

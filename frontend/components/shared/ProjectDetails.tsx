@@ -256,7 +256,7 @@ const ProjectDetail = ({ isOwner, projectAddress }: { isOwner: boolean, projectA
             
             {!isOwner && investorStatus !== 2 && (
               <div className="p-3 bg-white rounded-lg shadow-sm">
-                <p className="text-yellow-700">Vous ne pouvez pas acheter de parts car votre dossier n'a pas été validé.</p>
+                <p className="text-yellow-700">Vous ne pouvez pas acheter de parts car votre dossier n&lsquo;a pas été validé.</p>
               </div>
             )}
 
@@ -270,7 +270,7 @@ const ProjectDetail = ({ isOwner, projectAddress }: { isOwner: boolean, projectA
             {!isOwner && projectStatus !== 2 && investorStatus === 0 && (
               <div className="p-3 bg-white rounded-lg shadow-sm">
                 <h4 className="text-md font-semibold mb-2 text-blue-700">Inscription requise pour participer</h4>
-                <p className="text-sm text-gray-600 mb-3">Pour pouvoir participer dans ce projet, vous devez d'abord vous enregistrer.</p>
+                <p className="text-sm text-gray-600 mb-3">Pour pouvoir participer dans ce projet, vous devez d&lsquo;abord vous enregistrer.</p>
                 <Button 
                   onClick={handleAskForRegistration}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md transition-colors"

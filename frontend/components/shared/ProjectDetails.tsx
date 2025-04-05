@@ -11,6 +11,7 @@ import { Button } from '../ui/button';
 import { formatUnits } from 'viem/utils';
 import { erc20Abi } from 'viem';
 import ApproveAndBuy from './ApproveAndBuy';
+import { Input } from '../ui/input';
 
 const ProjectDetail = ({ isOwner, projectAddress }: { isOwner: boolean, projectAddress: string }) => {
   const { address } = useAccount();
@@ -68,6 +69,17 @@ const ProjectDetail = ({ isOwner, projectAddress }: { isOwner: boolean, projectA
     });
   };
 
+  const [treasuryWallet, setTreasuryWallet] = useState<string>("");
+  const withdrawUsdc = async () => {
+    writeContract({
+      address: projectAddress as `0x${string}`,
+      abi: PROJECT_CONTRACT_ABI,
+      functionName: "withdrawUsdc",
+      args: [treasuryWallet],
+      account: address
+    });
+  };
+  
   useEffect(() => {
     const projectContract = {
       address: projectAddress as `0x${string}`,
@@ -290,6 +302,24 @@ const ProjectDetail = ({ isOwner, projectAddress }: { isOwner: boolean, projectA
                 className="w-full bg-red-600 hover:bg-red-700 text-white"
               >
                 Clôturer la vente
+              </Button>
+            </div>
+          )}
+          {isOwner && projectStatus === 2 && (
+            <div className="pt-4 border-t">
+              <Input
+                type="text"
+                placeholder="Treasury wallet"
+                value={treasuryWallet}
+                onChange={(e) => setTreasuryWallet(e.target.value)}
+              />
+
+              <Button 
+                onClick={withdrawUsdc}
+                className="w-full bg-red-600 hover:bg-red-700 text-white"
+              >
+
+                Collecter les fonds
               </Button>
             </div>
           )}

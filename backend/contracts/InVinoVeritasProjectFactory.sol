@@ -7,12 +7,12 @@ import './InVinoVeritasProject.sol';
 
 /**
  * @title InVinoVeritasProjectFactory
- * @dev Factory contract for creating and deploying InVinoVeritas projects
- * @notice This contract allows the owner to create new InVinoVeritas projects and tracks all deployed projects
+ * @dev Factory contract for creating and deploying InVinoVeritas related projects and tokens
+ * @notice This contract allows the owner to create new InVinoVeritas projects with their associated tokens and tracks all deployed projects
  */
 contract InVinoVeritasProjectFactory is Ownable {
     /// @notice The address of the USDC token contract
-    address public immutable usdcAddress;
+    address public immutable USDC_ADDRESS;
     
     /// @notice Array of all deployed project addresses
     address[] private allProjects;
@@ -31,7 +31,7 @@ contract InVinoVeritasProjectFactory is Ownable {
      */
     constructor(address _usdcAddress) Ownable(msg.sender) {
         require(_usdcAddress != address(0), "USDC address is not set");
-        usdcAddress = _usdcAddress;
+        USDC_ADDRESS = _usdcAddress;
     }
 
     /**
@@ -46,7 +46,7 @@ contract InVinoVeritasProjectFactory is Ownable {
         require(keccak256(abi.encode(_name)) != keccak256(abi.encode("")), 'Project Name is required');
         require(_projectValue > 0, "Project value must be greater than 0");
 
-        address ivvProjectAddress = address(new InVinoVeritasProject(owner(), _symbol, usdcAddress, _name, _projectValue));
+        address ivvProjectAddress = address(new InVinoVeritasProject(owner(), _symbol, USDC_ADDRESS, _name, _projectValue));
         allProjects.push(ivvProjectAddress);
         emit ProjectDeployed (ivvProjectAddress, _projectValue);        
     }

@@ -1,6 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@nomicfoundation/hardhat-verify");
-require('dotenv').config()
+require('dotenv').config();
 const ALCHEMY_API_KEY = process.env.ALCHEMY || "";
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
 const ETHERSCAN = process.env.ETHERSCAN || "";

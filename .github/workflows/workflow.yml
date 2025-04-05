@@ -65,6 +65,10 @@ jobs:
         run: npx hardhat coverage
 
       - uses: crytic/slither-action@v0.4.1
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          ALCHEMY: ${{ secrets.ALCHEMY }}
+          ETHERSCAN: ${{ secrets.ETHERSCAN }}
         with:
             target: './backend/'
             fail-on: none

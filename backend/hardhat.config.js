@@ -28,11 +28,7 @@ module.exports = {
       url: `https://eth-sepolia.g.alchemy.com/v2/` + ALCHEMY_API_KEY,
       accounts: [`0x${PRIVATE_KEY}`],
       chainId: 11155111
-    },
-    localhost: {
-      url: "http://127.0.0.1:8545",
-      chainId: 31337,
-    }, 
+    }
   },
   etherscan: {
     apiKey: ETHERSCAN

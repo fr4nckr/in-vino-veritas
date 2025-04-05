@@ -1,5 +1,6 @@
-export const USDC_ADDRESS="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-export const PROJECT_FACTORY_CONTRACT_ADDRESS="0xc565EB7363769f8ffAe0005285ccD854c631A0a0"
+//export const USDC_ADDRESS="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+export const USDC_ADDRESS="0xB00849355e056598cc2d414E43591EC184cbDc47";
+export const PROJECT_FACTORY_CONTRACT_ADDRESS="0x15dC32AfdD82555edDe4993ad4484bc1697446c3"
 export const PROJECT_FACTORY_ABI=[
   {
     "inputs": [
@@ -323,6 +324,19 @@ export const PROJECT_CONTRACT_ABI = [
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "treasuryWallet",
+        "type": "address"
+      }
+    ],
+    "name": "TreasuryCollected",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "askForRegistration",
     "outputs": [],
@@ -498,6 +512,19 @@ export const PROJECT_CONTRACT_ABI = [
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_treasuryWallet",
+        "type": "address"
+      }
+    ],
+    "name": "withdrawUsdc",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   }
 ]
 export const IVV_CONTRACT_ABI=[
@@ -516,6 +543,22 @@ export const IVV_CONTRACT_ABI=[
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "increasedSupply",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "cap",
+        "type": "uint256"
+      }
+    ],
+    "name": "ERC20ExceededCap",
+    "type": "error"
   },
   {
     "inputs": [
@@ -568,6 +611,17 @@ export const IVV_CONTRACT_ABI=[
       }
     ],
     "name": "ERC20InvalidApprover",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "cap",
+        "type": "uint256"
+      }
+    ],
+    "name": "ERC20InvalidCap",
     "type": "error"
   },
   {
@@ -710,6 +764,19 @@ export const IVV_CONTRACT_ABI=[
       }
     ],
     "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "cap",
     "outputs": [
       {
         "internalType": "uint256",

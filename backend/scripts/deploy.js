@@ -1,5 +1,6 @@
 import hre from "hardhat";
-
+import dotenv from 'dotenv';
+dotenv.config();
 async function main() {
 
   const anotherImpersonateFundErc20 = async (contract, sender, recepients, amount, decimals) => {
@@ -32,9 +33,9 @@ async function main() {
   const ivvProjectFactory = await ivvProjectFactoryContract.deploy(USDC);
   await ivvProjectFactory.waitForDeployment();
   console.log("Factory Contract deployed at address: ", ivvProjectFactory.target);
-  await ivvProjectFactory.createProject('IVV_BDX', 'Projet agricole à Bordeaux de 100HA', 100000);
-  await ivvProjectFactory.createProject('IVV_TLS', 'Projet agricole à Toulouse de 50HA', 50000);
-  await ivvProjectFactory.createProject('IVV_AIX', 'Projet agricole à Aix-en-Provence de 200HA', 200000);
+  await ivvProjectFactory.createProject('IVV_BDX', 'Projet viticole à Bordeaux', 100000);
+  await ivvProjectFactory.createProject('IVV_TLS', 'Projet agricole à Toulouse', 143000);
+  await ivvProjectFactory.createProject('IVV_AIX', 'Projet viticole à Aix-en-Provence', 200000);
   const deployedProjectAddresses = await ivvProjectFactory.getAllProjects();
   for (const projectAddress of deployedProjectAddresses) {
     console.log("Deployed project address: ", projectAddress);

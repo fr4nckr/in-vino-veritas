@@ -43,15 +43,32 @@ jobs:
         run: npm ci
 
       - name: Run hardhat compilation
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          ALCHEMY: ${{ secrets.ALCHEMY }}
+          ETHERSCAN: ${{ secrets.ETHERSCAN }}
         run: npx hardhat compile
+        
     
       - name: Run hardhat tests
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          ALCHEMY: ${{ secrets.ALCHEMY }}
+          ETHERSCAN: ${{ secrets.ETHERSCAN }}
         run: npx hardhat test
 
       - name: Run hardhat coverage
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          ALCHEMY: ${{ secrets.ALCHEMY }}
+          ETHERSCAN: ${{ secrets.ETHERSCAN }}
         run: npx hardhat coverage
 
       - uses: crytic/slither-action@v0.4.1
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          ALCHEMY: ${{ secrets.ALCHEMY }}
+          ETHERSCAN: ${{ secrets.ETHERSCAN }}
         with:
             target: './backend/'
             fail-on: none

@@ -47,13 +47,36 @@ Les cas limites ont été également testés (vérification d'ownership, revert 
 
 ## Quelques captures d'écrans : 
 
+### Page d'accueil 
+La page d'accueil est simple et présente rapidement le but du projet. Une barre de navigation est disponible pour changer de page et consulter le solde en USDC du compte connecté à l'application. 
 
+![image](https://github.com/user-attachments/assets/c2e9277f-d1b0-4158-8d83-f229ad4799ad)
+
+### Page des projets vue investisseur
+Cette page présente pour un investisseur la liste des projets à venir, en cours ou sold out. 
+Elle permet de s'enregistrer, de consulter son statut, d'acheter des tokens d'un projet. 
+![image](https://github.com/user-attachments/assets/f365cf94-9f56-489e-b0f8-fbe5372bc660)
+
+### Page des projets vue administrateur 
+Cette page présente pour l'administrateur de l'application la liste des projets et quelques actions relatives au projet comme démarrer la vente, clôturer la vente et collecter les fonds une fois que la vente terminée. 
+![image](https://github.com/user-attachments/assets/bf714ee1-2d67-4dae-b417-4ee26ad0e72d)
+
+### Page d'administration
+Cette page est dédiée à l'administrateur de l'application et permet de créer un nouveau projet et de gérer l'approbation ou le refus d'investisseur pour chacun des projets 
+
+![image](https://github.com/user-attachments/assets/65abf510-a9c5-47c1-8739-3940fb009e2a)
 
 
 # Intégration continue et Déploiement : 
 
-Des Github Actions ont été mises en places avec deux workflow : 
+Le travail a été réalisée en simulant un réel travail d'équipe sur GitHub. J'ai utilisé des branches et des Pull Request pour faire évoluer mon travail de façon itérative. 
+
+Des Github Actions ont été mises en places avec deux workflow pour valider au fur et à mesure : 
 - build-backend : chargé de lancer les commandes compilations, test, coverage et utilisation de l'outil slithers pour les alertes potentielles de sécurité. 
 - build-frontend : chargé de build l'application NextJS
 
-L'application est ensuite déployée sur Vercel et est disponible ici : https://in-vino-veritas-iota.vercel.app/
+L'application est ensuite automatiquement déployée sur Vercel et est disponible ici : https://in-vino-veritas-iota.vercel.app/. Elle est reliée au testnet Sepolia et aux contrats du projet précédemment déployés. 
+
+
+
+Merci pour votre lecture. 

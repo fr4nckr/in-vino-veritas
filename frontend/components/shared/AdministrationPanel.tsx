@@ -21,14 +21,14 @@ const AdministrationPanel = () => {
   const [investorsByProject, setInvestorsByProject] = useState<Map<`0x${string}`, Investor[]>>(new Map());
   const { address } = useAccount();
   
-  const { data: hash, error, isPending, writeContract } = useWriteContract()
+  const { data: hashCreateProject, error:errorCreateProject, isPending:isPendingCreateProject, writeContract: writeCreateProject } = useWriteContract()
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
   useWaitForTransactionReceipt({
-    hash, 
+    hash: hashCreateProject, 
   })
 
   const handleCreateProject = async() => { 
-      writeContract({
+      writeCreateProject({
           address: PROJECT_FACTORY_CONTRACT_ADDRESS,
           abi: PROJECT_FACTORY_ABI,
           functionName: "createProject",
@@ -97,8 +97,12 @@ const AdministrationPanel = () => {
       refetchProjects();
     }, [address, allProjects, refetchProjects, isConfirmed]);
   
+  const { data: hashValidateInvestor, error:errorValidateInvestor, isPending:isPendingValidateInvestor, writeContract: writeValidateInvestor } = useWriteContract()
+  const { isLoading: isConfirmingValidate, isSuccess: isConfirmedValidate } = useWaitForTransactionReceipt({
+    hash: hashValidateInvestor, 
+  })
   const handleValidateInvestor = async(projectAddress: `0x${string}`, investorAddress: `0x${string}`) => { 
-    writeContract({
+    writeValidateInvestor({
       address: projectAddress,
       abi: PROJECT_CONTRACT_ABI,
       functionName: "validateInvestor",
@@ -106,9 +110,12 @@ const AdministrationPanel = () => {
       args: [investorAddress]
     });
   };
-  
+  const { data: hashDenyInvestor, error:errorDenyInvestor, isPending:isPendingDenyInvestor, writeContract: writeDenyInvestor } = useWriteContract()
+  const { isLoading: isConfirmingDeny, isSuccess: isConfirmedDeny } = useWaitForTransactionReceipt({
+    hash: hashDenyInvestor, 
+  })
   const handleDenyInvestor = async(projectAddress: `0x${string}`, investorAddress: `0x${string}`) => { 
-    writeContract({
+    writeDenyInvestor({
       address: projectAddress,
       abi: PROJECT_CONTRACT_ABI,
       functionName: "denyInvestor",
@@ -142,10 +149,10 @@ const AdministrationPanel = () => {
     <div className="flex flex-col w-full gap-8 p-6">
       {/* Transaction Status Alerts */}
       <div className="p-4">
-        {hash && (
+        {hashCreateProject && (
           <Alert className="mb-2 bg-blue-50 text-blue-700 border-blue-200">
             <p className="font-medium">Transaction Hash:</p>
-            <p className="text-sm break-all">{hash}</p>
+            <p className="text-sm break-all">{hashCreateProject}</p>
           </Alert>
         )}
         {isConfirming && (
@@ -164,10 +171,70 @@ const AdministrationPanel = () => {
             </p>
           </Alert>
         )}
-        {error && (
+        {errorCreateProject && (
           <Alert className="mb-2 bg-red-50 text-red-700 border-red-200">
             <p className="font-medium">Erreur:</p>
-            <p className="text-sm">{error ? error.message : ''}</p>
+            <p className="text-sm">{errorCreateProject ? errorCreateProject.message : ''}</p>
+          </Alert>
+        )}
+        
+        {/* Validate Investor Transaction Status */}
+        {hashValidateInvestor && (
+          <Alert className="mb-2 bg-blue-50 text-blue-700 border-blue-200">
+            <p className="font-medium">Transaction Hash (Validation):</p>
+            <p className="text-sm break-all">{hashValidateInvestor}</p>
+          </Alert>
+        )}
+        {isConfirmingValidate && (
+          <Alert className="mb-2 bg-yellow-50 text-yellow-700 border-yellow-200">
+            <p className="font-medium flex items-center">
+              <span className="mr-2 animate-spin">⟳</span>
+              En attente de confirmation de la validation...
+            </p>
+          </Alert>
+        )}
+        {isConfirmedValidate && (
+          <Alert className="mb-2 bg-green-50 text-green-700 border-green-200">
+            <p className="font-medium flex items-center">
+              <span className="mr-2">✓</span>
+              Validation confirmée
+            </p>
+          </Alert>
+        )}
+        {errorValidateInvestor && (
+          <Alert className="mb-2 bg-red-50 text-red-700 border-red-200">
+            <p className="font-medium">Erreur de validation:</p>
+            <p className="text-sm">{errorValidateInvestor ? errorValidateInvestor.message : ''}</p>
+          </Alert>
+        )}
+        
+        {/* Deny Investor Transaction Status */}
+        {hashDenyInvestor && (
+          <Alert className="mb-2 bg-blue-50 text-blue-700 border-blue-200">
+            <p className="font-medium">Transaction Hash (Refus):</p>
+            <p className="text-sm break-all">{hashDenyInvestor}</p>
+          </Alert>
+        )}
+        {isConfirmingDeny && (
+          <Alert className="mb-2 bg-yellow-50 text-yellow-700 border-yellow-200">
+            <p className="font-medium flex items-center">
+              <span className="mr-2 animate-spin">⟳</span>
+              En attente de confirmation du refus...
+            </p>
+          </Alert>
+        )}
+        {isConfirmedDeny && (
+          <Alert className="mb-2 bg-green-50 text-green-700 border-green-200">
+            <p className="font-medium flex items-center">
+              <span className="mr-2">✓</span>
+              Refus confirmé
+            </p>
+          </Alert>
+        )}
+        {errorDenyInvestor && (
+          <Alert className="mb-2 bg-red-50 text-red-700 border-red-200">
+            <p className="font-medium">Erreur de refus:</p>
+            <p className="text-sm">{errorDenyInvestor ? errorDenyInvestor.message : ''}</p>
           </Alert>
         )}
       </div>
@@ -219,11 +286,11 @@ const AdministrationPanel = () => {
 
           <Button
             type="submit"
-            disabled={isPending}
+            disabled={isPendingCreateProject}
             onClick={handleCreateProject}
             className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
           >
-            {isPending ? 'Creating...' : 'Create Project'}
+            {isPendingCreateProject ? 'Création en cours...' : 'Créer le projet'}
           </Button>
         </div>
       </div>
@@ -260,16 +327,28 @@ const AdministrationPanel = () => {
                             <Button 
                               onClick={() => handleValidateInvestor(projectAddress as `0x${string}`, investor.investorAddress as `0x${string}`)}
                               className="bg-green-600 hover:bg-green-700"
-                              disabled={investor.investorStatus != 1}
+                              disabled={investor.investorStatus != 1 || isPendingValidateInvestor}
                             >
-                              Valider
+                              {isPendingValidateInvestor ? (
+                                <span className="flex items-center justify-center">
+                                  <span className="mr-1 animate-spin">⟳</span> Validation...
+                                </span>
+                              ) : (
+                                'Valider'
+                              )}
                             </Button>
                             <Button 
                               onClick={() => handleDenyInvestor(projectAddress as `0x${string}`, investor.investorAddress as `0x${string}`)}
                               className="bg-red-600 hover:bg-red-700"
-                              disabled={investor.investorStatus != 1}
+                              disabled={investor.investorStatus != 1 || isPendingDenyInvestor}
                             >
-                              Refuser
+                              {isPendingDenyInvestor ? (
+                                <span className="flex items-center justify-center">
+                                  <span className="mr-1 animate-spin">⟳</span> Refus...
+                                </span>
+                              ) : (
+                                'Refuser'
+                              )}
                             </Button>
                           </div>
                         </td>

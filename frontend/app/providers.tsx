@@ -3,15 +3,10 @@
 import type React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider } from 'wagmi';
-import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { sepolia } from 'viem/chains';
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 
-const config = getDefaultConfig({
-  appName: 'My RainbowKit App',
-  projectId: '65af7ffc03881e7982d909862c11aa59',
-  chains: [sepolia],
-  ssr: true, // If your dApp uses server side rendering (SSR)
-});
+import { config } from '@/utils/wagmi';
+
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {

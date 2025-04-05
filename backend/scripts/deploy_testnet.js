@@ -22,11 +22,11 @@ async function main() {
   console.log("ERC20 token minted and sent to secondAccount test account at address: ", secondAccount);
   console.log("ERC20 token minted and sent to thirdAccount test account at address: ", thirdAccount);
   
-  //Deploy the factory contract with the fake USDC as parameter
-  const ivvProjectFactoryContract = await hre.ethers.getContractFactory('InVinoVeritasProjectFactory');
-  const ivvProjectFactory = await ivvProjectFactoryContract.deploy(erc20.target);
-  await ivvProjectFactory.waitForDeployment();
-  console.log("Factory Contract deployed at address: ", ivvProjectFactory.target);
+  // //Deploy the factory contract with the fake USDC as parameter
+  // const ivvProjectFactoryContract = await hre.ethers.getContractFactory('InVinoVeritasProjectFactory');
+  // const ivvProjectFactory = await ivvProjectFactoryContract.deploy(erc20.target);
+  // await ivvProjectFactory.waitForDeployment();
+  // console.log("Factory Contract deployed at address: ", ivvProjectFactory.target);
   
   await ivvProjectFactory.createProject('IVV_BDX', 'Projet viticole à Bordeaux', 100000);
   await ivvProjectFactory.createProject('IVV_TLS', 'Projet agricole à Toulouse', 143000);

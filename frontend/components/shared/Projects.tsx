@@ -24,7 +24,7 @@ const Projects = () => {
     const isOwner = ownerAddress && ownerAddress === address ? true : false;
     return (
       <div className="container mx-auto px-4 py-8">
-        <h2 className="text-3xl font-bold mb-8">Projets Disponibles</h2>
+        <h2 className="text-3xl font-bold mb-8 text-gray-800 drop-shadow-sm text-center">Liste des projets InVinoVeritas</h2>
         <div className="flex flex-col space-y-6">
           {allProjects && allProjects.map((projectAddress, index) => (
             <div key={index} className="w-full border rounded-lg overflow-hidden shadow-md">

@@ -3,9 +3,12 @@
 [![CI](https://github.com/fr4nckr/in-vino-veritas/actions/workflows/workflow.yml/badge.svg)](https://github.com/fr4nckr/in-vino-veritas/actions/workflows/workflow.yml)
 
 
-#Principe du projet InVinoVeritas et de ce MVP
+# Rapide présentation du projet InVinoVeritas et du MVP réalisé
 
 In Vino Veritas est un projet de tokenisation de foncier viticole/agricole. Il permet à des investisseurs d'entrer dans un cercle vertueux, finançant des projets fonciers qui seront loués à des jeunes exploitants n'ayant pas les moyens financiers d'être propriétaire.
+
+![image](https://github.com/user-attachments/assets/6a4a7d45-70f5-4609-8ac2-7b4a995674e7)
+
 
 Ce MVP se concentre sur la première étape du projet qui consiste à mettre en vente du foncier pour permettre à des investisseurs autorisés d'acheter des droits (tokens) sur la structure juridique détenant ce foncier.
 

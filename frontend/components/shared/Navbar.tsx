@@ -54,23 +54,23 @@ const Navbar = () => {
       </div>
 
       {/* Navigation Menu */}
-      <div className="flex items-center space-x-8">
-        <Link href="/" className="text-gray-700 hover:text-gray-900">
+      <div className="flex items-center justify-center space-x-8 flex-1">
+        <Link href="/" className="text-gray-700 hover:text-gray-900 text-lg font-medium drop-shadow-sm">
           Home
         </Link>
-        <Link href="/projects" className="text-gray-700 hover:text-gray-900">
+        <Link href="/projects" className="text-gray-700 hover:text-gray-900 text-lg font-medium drop-shadow-sm">
           Projects
         </Link>
         {isConnected && isOwner && (
-          <Link href="/admin" className="text-gray-700 hover:text-gray-900">
+          <Link href="/admin" className="text-gray-700 hover:text-gray-900 text-lg font-medium drop-shadow-sm">
             Administration
           </Link>
         )}
-        <Link href="/about" className="text-gray-700 hover:text-gray-900">
+        <Link href="/about" className="text-gray-700 hover:text-gray-900 text-lg font-medium drop-shadow-sm">
           About
         </Link>
       </div>
-      {isConnected && (<div className="flex items-center space-x-8">
+      {isConnected && (<div className="flex items-center space-x-8 mr-6">
             {formatUnits(balance, 6)} &nbsp; <Image
             src="/images/usdc.png"
             width={20}

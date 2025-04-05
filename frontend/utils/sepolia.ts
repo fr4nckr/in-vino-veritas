@@ -1,4 +1,4 @@
-const RPC = process.env.NEXTPUBLICALCHEMY_RPC || "";
+const RPC = process.env.NEXT_PUBLIC_ALCHEMY_RPC || "";
 export const sepolia = {
     id: 11155111,
     name: 'Sepolia',

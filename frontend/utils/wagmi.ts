@@ -1,12 +1,11 @@
-import { getDefaultConfig } from '@rainbow-me/rainbowkit';
+import { Chain, getDefaultConfig } from '@rainbow-me/rainbowkit';
 import {
   sepolia
-} from 'wagmi/chains';
+} from '@/utils/sepolia';
 
 export const config = getDefaultConfig({
   appName: 'Test demo',
-  projectId: '60ee9c4c12525621e08de2d51183f630',
-  chains: [sepolia],
+  projectId: '65af7ffc03881e7982d909862c11aa59',
+  chains: [sepolia as Chain],
   ssr: true,
 });
-

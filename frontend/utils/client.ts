@@ -7,9 +7,9 @@ hardhat : Un objet qui représente la chaîne Hardhat, utilisée pour le dévelo
 */
 import { createPublicClient, http } from 'viem'
 import { sepolia } from 'viem/chains'
-const RPC = process.env.NEXTPUBLICALCHEMY_RPC || "";
 
-console.log(RPC)
+const RPC = process.env.NEXT_PUBLIC_ALCHEMY_RPC || "";
+
 /*
 La fonction createPublicClient est appelée avec un objet de configuration qui spécifie deux propriétés :
 

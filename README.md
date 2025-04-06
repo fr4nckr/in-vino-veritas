@@ -28,7 +28,8 @@ Ce MVP se concentre sur la première étape du projet qui consiste à mettre en 
 
 ## Schéma du MVP 
 
-![image](https://github.com/user-attachments/assets/3d7018c5-a0e0-45ba-b870-1123639da59e)
+![image](https://github.com/user-attachments/assets/d3dc80ef-bf74-4f73-af2c-5a0a057c291f)
+
 
 ## Développement des smart contracts avec Hardhat 
 
@@ -71,7 +72,6 @@ Cette page présente pour l'administrateur de l'application la liste des projets
 Cette page est dédiée à l'administrateur de l'application et permet de créer un nouveau projet et de gérer l'approbation ou le refus d'investisseur pour chacun des projets 
 
 ![image](https://github.com/user-attachments/assets/65abf510-a9c5-47c1-8739-3940fb009e2a)
-
 
 ## Intégration continue
 

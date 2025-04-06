@@ -40,8 +40,8 @@ export default function About() {
             <h2 className="text-2xl font-semibold mb-4">Comment ça marche ?</h2>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
               <li>Tokenisation de parcelles agricoles et viticoles</li>
-              <li>Accès facilité pour les nouveaux exploitants qui souhaite louer du foncier</li>
-              <li>Investissement possible pour les petits investisseurs qui souhaite participer au développement du secteur agricole et profiter de parts de revenus associés à la location du foncier auprès d&lsquo;exploitants ainsi que de rendements associés à la finance décentralisée</li>
+              <li>Accès facilité pour les nouveaux exploitants qui souhaitent louer du foncier</li>
+              <li>Investissement possible pour les petits investisseurs qui souhaitent participer au développement du secteur agricole et profiter de parts de revenus associés à la location du foncier auprès d&lsquo;exploitants ainsi que de rendements associés à la finance décentralisée</li>
               <li>Onboarding, support et accompagnement tout au long du projet</li>
             </ul>
           </div>

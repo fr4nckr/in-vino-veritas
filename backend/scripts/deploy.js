@@ -2,31 +2,6 @@ import hre from "hardhat";
 import dotenv from 'dotenv';
 dotenv.config();
 async function main() {
-
-  // const anotherImpersonateFundErc20 = async (contract, sender, recepients, amount, decimals) => {
-  //   const FUND_AMOUNT = ethers.parseUnits(amount, decimals);
-  //   const whaleSigner = await ethers.getImpersonatedSigner(sender);
-  //   for (const recepient of recepients) {
-  //     await contract.connect(whaleSigner).transfer(recepient, FUND_AMOUNT);
-  //   }
-  // };
-  
-  // //Code to call impersonateFundErc20 function
-  // const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-  // const usdc = await ethers.getContractAt("IERC20", USDC);
-  // const USDC_WHALE = "0xF977814e90dA44bFA03b6295A0616a897441aceC";
-  // const DECIMALS = 6;
-
-  // //Get signers
-  // const signers = await hre.ethers.getSigners();
-
-  // await anotherImpersonateFundErc20(
-  //   usdc,
-  //   USDC_WHALE,
-  //   signers.map(signer => signer.address),
-  //   "100000",
-  //   DECIMALS
-  // );
   
   //Deploy a MockERC20 token that will be used as USDC for testing
   const erc20Contract = await hre.ethers.getContractFactory('MockERC20');

@@ -5,8 +5,7 @@
 # Promotion Galilée - Projet de certification - Franck Rouanet
 
 
-
-## Rapide présentation du projet InVinoVeritas et du MVP réalisés
+## Présentation du projet InVinoVeritas et du MVP réalisé
 
 In Vino Veritas est un projet de tokenisation de foncier viticole/agricole. Il permet à des investisseurs d'entrer dans un cercle vertueux, finançant des projets fonciers qui seront loués à des jeunes exploitants n'ayant pas les moyens financiers d'être propriétaire.
 

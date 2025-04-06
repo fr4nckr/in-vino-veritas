@@ -6,7 +6,6 @@ import Link from 'next/link';
 export default function Home() {
   return (
     <main className="min-h-screen">
-      {/* Hero Section */}
       <section className="relative h-[600px] flex items-center justify-center">
         <div className="absolute inset-0 z-0">
           <Image
@@ -33,7 +32,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Key Strengths Section */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Nos Points Forts</h2>
